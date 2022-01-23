@@ -6,12 +6,12 @@ __version__ = "0.0.1"
 __date__ = "23 May 2022"
 
 """
-    Sample program to get a '1 week' and '1 minute' ohlc(v) data from binance
+    Sample program to get a '1 week' and '1 minute' kline/ohlc(v) data from binance
 
 """
 
 # use python-binance API to interact with binance
-# and csv to write the ohlc(v) data
+# and csv to write the kline data
 from binance.client import Client
 import csv
 
@@ -19,7 +19,7 @@ import csv
 # NOTE: no need for an API key for ripping the historical data
 client = Client()
 
-# specify the symbol for ohlc(v) as btc//usdt
+# specify the symbol for kline as btc//usdt
 SYMBOL = 'BTCUSDT'
 # specify the column for the csv file
 columns = [
@@ -29,18 +29,10 @@ columns = [
     'ignore'
 ]
 
-# get ohlc(v) in 1 week interval
-klines = client.get_historical_klines(SYMBOL, Client.KLINE_INTERVAL_1WEEK, "1 Jan, 2021")
+# get kline in 1 week interval
+klines = client.get_historical_klines(SYMBOL, '1w', "1 Jan, 2021")
 
 with open('1week.csv', 'w', newline='') as f:
-    write = csv.writer(f)
-    write.writerow(columns)
-    write.writerows(klines)
-
-# get ohlc(v) in 1 min interval
-klines = client.get_historical_klines(SYMBOL, Client.KLINE_INTERVAL_1MINUTE, "1 Jan, 2021")
-
-with open('1min.csv', 'w', newline='') as f:
     write = csv.writer(f)
     write.writerow(columns)
     write.writerows(klines)
