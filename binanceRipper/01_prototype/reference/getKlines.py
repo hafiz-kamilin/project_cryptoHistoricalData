@@ -1,11 +1,11 @@
-# SOURCE: https://stackoverflow.com/questions/68260770/binance-api-store-kline-candlestick-data-to-csv-file
+# SOURCE: https://stackoverflow.com/a/68261084
 
-from binance.client import Client
 import csv
-
-client = Client()
+from binance.client import Client
 
 SYMBOL = 'BTCUSDT'
+
+client = Client()
 
 columns = [
     'open_time', 'open', 'high', 'low', 'close', 'volume',
@@ -14,9 +14,9 @@ columns = [
     'ignore'
 ]
 
-klines = client.get_historical_klines(SYMBOL, Client.KLINE_INTERVAL_1WEEK, "1 Jan, 2021")
+klines = client.get_historical_klines(SYMBOL, Client.KLINE_INTERVAL_1WEEK, "1 Jan, 2017")
 
-with open('1week.csv', 'w', newline='') as f:
+with open('output.csv', 'w') as f:
     write = csv.writer(f)
     write.writerow(columns)
     write.writerows(klines)
