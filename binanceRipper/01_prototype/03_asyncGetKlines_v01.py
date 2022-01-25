@@ -6,7 +6,7 @@ __version__ = "0.0.1"
 __date__ = "24 May 2022"
 
 """
-    Sample program to get predefined trading pair from binance via async
+    Sample program to get predefined trading pair and timerange from binance via async
 
 """
 
@@ -22,7 +22,7 @@ class GetAllBinanceData:
 
     def __init__(self, workers_num: int = 10):
 
-        # initialize the number of worker
+        # initialize the number of worker (hard coded)
         self.workers_num: int = workers_num
         # set the max number of worker in queue is 10
         self.task_q: asyncio.Queue = asyncio.Queue(maxsize=10)
@@ -78,6 +78,6 @@ class GetAllBinanceData:
 
 
 if __name__ == "__main__":
-    
+
     loop = asyncio.get_event_loop()
     loop.run_until_complete(GetAllBinanceData().amain())
