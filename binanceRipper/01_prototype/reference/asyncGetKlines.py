@@ -1,4 +1,4 @@
-# SOURCE: httpsstackoverflow.comquestions70070722how-to-run-for-loop-as-threads-so-it-speeds-up-the-for-loop
+# SOURCE: https://stackoverflow.com/a/70081987
 
 import asyncio
 from binance import AsyncClient
@@ -14,7 +14,7 @@ class GetAllBinanceData:
     async def get_symbols_from_somewhere(self):
         """Get symbols and distribute them among workers"""
         # imagine the symbols are from some file
-        symbols = ["BNBBTC", "ETHBTC", "NEOBTC"]
+        symbols = ["BNBBTC", "ETHBTC", "NEOBTC"] * 100
         for i in symbols:
             await self.task_q.put(i)
 
@@ -50,3 +50,5 @@ class GetAllBinanceData:
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
     loop.run_until_complete(GetAllBinanceData().amain())
+    print("*" * 100)
+    print(RESULTS)
