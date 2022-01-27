@@ -8,7 +8,9 @@ __date__ = "27 May 2022"
 """
     Sample program to get custom trading pair and timerange from binance via async
 
-    + TODO add custom date range
+    + add custom date range
+    + TODO add method to limit the rate under 1200 per minute
+    + TODO date range sanity test
     + TODO add write to csv
 
 """
@@ -40,7 +42,14 @@ SUPPORTED_INTERVAL = {
 # get the data from binance
 class GetAllBinanceData:
 
-    def __init__(self, symbol: str, interval: str, workers_num: int = 10):
+    def __init__(
+        self,
+        symbol: str,
+        interval: str,
+        start: str,
+        end: None,
+        workers_num: int = 10
+    ):
 
         # initalize the trading pair
         self.trading_pair = self.get_trading_pair(symbol=symbol)
@@ -48,6 +57,9 @@ class GetAllBinanceData:
         # use set to check if the parsed str for kline interval is correct or not
         # use the parsed interval if it is supported
         self.interval = (interval if interval in SUPPORTED_INTERVAL else None)
+        # initialize the start and end time
+        self.start = start
+        self.end = end
         
         # sanity test
         if (self.trading_pair == []) and (self.interval is None):
@@ -107,8 +119,8 @@ class GetAllBinanceData:
             klines = await client.get_historical_klines(
                 symbol=trading_pair,
                 interval=self.interval,
-                start_str="2022-1-23 10:00:00",
-                end_str="2022-1-23 10:01:00"
+                start_str=self.start,
+                end_str=self.end
             )
 
             # send somewhere else
@@ -129,7 +141,7 @@ class GetAllBinanceData:
 if __name__ == "__main__":
 
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(GetAllBinanceData(symbol="ust", interval="1m").amain())
+    loop.run_until_complete(GetAllBinanceData(symbol="ust", interval="1m", start="2022-1-23 10:00:00", end="2022-1-23 10:01:00").amain())
 
     print("Result: \n" + str(RESULTS))
     
