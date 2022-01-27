@@ -16,6 +16,7 @@ __date__ = "27 May 2022"
 """
 
 # use python-binance API to interact with binance
+from binance.helpers import date_to_milliseconds
 from binance import Client, AsyncClient
 # using concurrent programming design
 import asyncio
