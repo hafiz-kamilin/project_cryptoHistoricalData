@@ -1,0 +1,10 @@
+1. use async to get data from binance
+2. find a way to convert timestamp into a human readable date https://www.programiz.com/python-programming/datetime/timestamp-datetime
+3. use feather to save/load the dataset https://arrow.apache.org/docs/python/feather.html
+4. add stop/resume feature https://stackoverflow.com/questions/68693561/how-to-detect-binancesocketmanager-websocket-disconnect-in-python
+5. use acyncio.Semaphore to prevent ourself from getting ban on binance https://stackoverflow.com/a/48486557
+
+Aggtrade
+
+https://stackoverflow.com/questions/61715249/python-the-execution-looks-like-synchronous-with-asyncio
+https://dateparser.readthedocs.io/en/latest/
