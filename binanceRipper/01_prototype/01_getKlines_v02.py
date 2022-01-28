@@ -61,8 +61,9 @@ columns = [
 
 try:
 
-    # for every available kline interval
-    for i in range(len(klineInterval)):
+    i = 0
+    # as long there is interval left to be parsed
+    while len(chosenInterval) != 0:
 
         if i == chosenInterval[0]:
 
@@ -76,6 +77,8 @@ try:
                 write = csv.writer(f)
                 write.writerow(columns)
                 write.writerows(klines)
+        
+        i += 1
 
 # catch exception and get the error message
 except BinanceAPIException as e:
