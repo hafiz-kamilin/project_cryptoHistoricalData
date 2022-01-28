@@ -9,9 +9,6 @@ __date__ = "27 May 2022"
     Sample program to get custom trading pair and timerange from binance via async
 
     + add custom date range
-    + TODO add method to limit the rate under 1200 per minute
-    + TODO date range sanity test
-    + TODO add write to csv
 
 """
 
