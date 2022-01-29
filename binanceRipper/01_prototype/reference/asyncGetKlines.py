@@ -14,7 +14,7 @@ class GetAllBinanceData:
     async def get_symbols_from_somewhere(self):
         """Get symbols and distribute them among workers"""
         # imagine the symbols are from some file
-        symbols = ["BNBBTC", "ETHBTC", "NEOBTC"] * 100
+        symbols = ["BNBBTC", "ETHBTC", "NEOBTC"]
         for i in symbols:
             await self.task_q.put(i)
 
