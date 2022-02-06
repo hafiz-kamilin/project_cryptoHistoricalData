@@ -101,6 +101,7 @@ class GetAllBinanceData:
     async def dummy_task(self):
 
         sleep(self.timer)
+        print("sleep")
 
     # main async wrapper fucntion
     async def amain(self) -> None:
@@ -113,6 +114,7 @@ class GetAllBinanceData:
                 *(
                     self.get_historical_klines(client) if (
                         (self.trading_pair != 0) and
+                        # TODO this shit is not working
                         (int(client.response.headers['x-mbx-used-weight-1m']) < 1_000)
                     ) else self.dummy_task() for _ in range(len(self.trading_pair))
                 )
@@ -123,7 +125,7 @@ class GetAllBinanceData:
 if __name__ == "__main__":
 
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(GetAllBinanceData(symbol="ust", interval="1m", start="2022-1-23 10:00:00", end="2022-1-23 10:01:00").amain())
+    loop.run_until_complete(GetAllBinanceData(symbol="usdt", interval="1m", start="2022-1-23 10:00:00", end="2022-1-23 10:01:00").amain())
 
     print("Result: \n" + str(RESULTS))
     
