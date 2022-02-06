@@ -2,15 +2,12 @@
 # -*- coding: utf-8 -*-
 
 __author__ = "Mohd Hafizuddin Bin Kamilin"
-__version__ = "0.0.5"
+__version__ = "0.3.5"
 __date__ = "28 May 2022"
 
 """
     Sample program to get custom trading pair and timerange from binance via async
-
-    + TODO add method to limit the rate under 1200 per minute
-    + TODO date range sanity test
-    + TODO add write to csv
+    # This program has no limiter; thus it will get blocked by Binance due to exceeding the request limit
 
 """
 

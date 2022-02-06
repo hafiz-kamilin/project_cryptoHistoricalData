@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = "Mohd Hafizuddin Bin Kamilin"
-__version__ = "0.0.2"
+__version__ = "0.3.2"
 __date__ = "25 May 2022"
 
 """
