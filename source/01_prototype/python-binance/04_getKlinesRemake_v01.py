@@ -15,11 +15,12 @@ __date__ = "28 May 2022"
 # use python-binance API to interact with binance
 from binance.helpers import date_to_milliseconds
 from binance import Client, AsyncClient
+# filler for dummy task to keep the loop moving
+from time import sleep
 # using concurrent programming design
 import asyncio
 
-RESULTS = []
-# refer to python binance for update/change in supported interval
+# refer to python-binance for update/change in supported interval
 SUPPORTED_INTERVAL = {
     '1m',
     '3m',
@@ -36,28 +37,24 @@ SUPPORTED_INTERVAL = {
     '1w',
     '1M'
 }
+# store the result
+RESULTS = []
 
 # get the data from binance
 class GetAllBinanceData:
 
-    def __init__(
-        self,
-        symbol: str,
-        interval: str,
-        start: str,
-        end: None,
-        workers_num: int = 10
-    ):
+    def __init__(self, symbol: str, interval: str, start: str, end: None):
 
         # initalize the trading pair
         self.trading_pair = self.get_trading_pair(symbol=symbol)
         print("\nTrading pair: " + ', '.join(self.trading_pair) + "\n")
-        # use set to check if the parsed str for kline interval is correct or not
-        # use the parsed interval if it is supported
+        # pass valid kline interval only (check if the parsed str for kline interval is correct or not)
         self.interval = (interval if interval in SUPPORTED_INTERVAL else None)
         # initialize the start and end time
         self.start = start
         self.end = end
+        # initialize the sleep timer for dummy task
+        self.timer = 10
         
         # sanity test
         if (self.trading_pair == []) and (self.interval is None):
@@ -66,11 +63,6 @@ class GetAllBinanceData:
             raise ValueError("Invalid trading pair parsed to the class!")
         elif (self.interval is None):
             raise ValueError("Invalid kline interval parsed to the class!")
-        
-        # initialize the number of worker (hard coded)
-        self.workers_num: int = workers_num
-        # set the max number of worker in queue is 10
-        self.task_q: asyncio.Queue = asyncio.Queue(maxsize=10)
 
     # get specific/all trading pair from binance
     def get_trading_pair(client: Client, symbol: str) -> list:
@@ -90,51 +82,43 @@ class GetAllBinanceData:
             # return all trade trading pair
             return trading_pair
 
-    # distribute the trading pairs to the workers
-    async def assign_trading_pair_to_worker(self):
-
-        # assign each of the trading pair to the worker?
-        for i in self.trading_pair:
-            await self.task_q.put(i)
-
-        # NOTE: wtf is this?
-        for i in range(self.workers_num):
-            await self.task_q.put(None)
-
     # get kline based on the predefined kline interval
     # task the worker need to do when assigned with their turn
     async def get_historical_klines(self, client: AsyncClient):
 
-        while True:
+        # get klines
+        klines = await client.get_historical_klines(
+            symbol=self.trading_pair.pop(),
+            interval=self.interval,
+            start_str=self.start,
+            end_str=self.end
+        )
 
-            # wait for the trading pair to be assigned to the worker
-            trading_pair = await self.task_q.get()
-            # stop when there is no more trading pair to parse
-            if trading_pair is None:
-                break
+        # send somewhere else
+        RESULTS.append(klines)
 
-            # get klines
-            klines = await client.get_historical_klines(
-                symbol=trading_pair,
-                interval=self.interval,
-                start_str=self.start,
-                end_str=self.end
-            )
+    #  dummy task that sleep for predefined seconds
+    async def dummy_task(self):
 
-            # send somewhere else
-            RESULTS.append(klines)
+        sleep(self.timer)
 
     # main async wrapper fucntion
     async def amain(self) -> None:
 
         client = await AsyncClient.create()
 
-        await asyncio.gather(
-            self.assign_trading_pair_to_worker(),
-            *[self.get_historical_klines(client) for _ in range(self.workers_num)]
-        )
+        while self.trading_pair != []:
 
-        await client.close_connection()
+            await asyncio.gather(
+                *(
+                    self.get_historical_klines(client) if (
+                        (self.trading_pair != 0) and
+                        (int(client.response.headers['x-mbx-used-weight-1m']) < 1_000)
+                    ) else self.dummy_task() for _ in range(len(self.trading_pair))
+                )
+            )
+
+            await client.close_connection()
 
 if __name__ == "__main__":
 
