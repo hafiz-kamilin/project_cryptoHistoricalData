@@ -4,9 +4,9 @@
 import asyncio
 
 async def count(i: str):
-    print("One" + i)
+    print("One " + i)
     await asyncio.sleep(1)
-    print("Two")
+    print("Two " + i)
 
 async def main():
     await asyncio.gather(count("0"), count("1"), count("2"))
