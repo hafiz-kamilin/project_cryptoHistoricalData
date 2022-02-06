@@ -3,15 +3,13 @@
 
 import asyncio
 
-async def count():
-    print("One")
+async def count(i: str):
+    print("One" + i)
     await asyncio.sleep(1)
     print("Two")
 
 async def main():
-    await asyncio.gather(count())
-    await asyncio.gather(count())
-    await asyncio.gather(count())
+    await asyncio.gather(count("0"), count("1"), count("2"))
 
 if __name__ == "__main__":
     import time
