@@ -8,3 +8,4 @@ Aggtrade
 
 https://stackoverflow.com/questions/61715249/python-the-execution-looks-like-synchronous-with-asyncio
 https://dateparser.readthedocs.io/en/latest/
+https://stackoverflow.com/questions/63515267/how-to-get-all-or-multiple-pairs-historical-klines-from-binance-api-in-one-re
