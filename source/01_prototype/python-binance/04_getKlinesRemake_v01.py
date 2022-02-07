@@ -3,14 +3,7 @@
 
 __author__ = "Mohd Hafizuddin Bin Kamilin"
 __version__ = "0.4.1"
-__date__ = "28 May 2022"
-
-"""
-    + TODO add method to limit the rate under 1200 per minute
-    + TODO date range sanity test
-    + TODO add write to csv
-
-"""
+__date__ = "5 Feb 2022"
 
 # use python-binance API to interact with binance
 from binance.helpers import date_to_milliseconds

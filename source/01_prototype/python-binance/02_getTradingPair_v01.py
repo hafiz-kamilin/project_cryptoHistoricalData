@@ -3,7 +3,7 @@
 
 __author__ = "Mohd Hafizuddin Bin Kamilin"
 __version__ = "0.2.1"
-__date__ = "24 May 2022"
+__date__ = "24 Jan 2022"
 
 """
     Sample program to get all trading pair from binance

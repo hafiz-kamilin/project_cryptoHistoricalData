@@ -3,7 +3,7 @@
 
 __author__ = "Mohd Hafizuddin Bin Kamilin"
 __version__ = "0.3.1"
-__date__ = "24 May 2022"
+__date__ = "24 Jan 2022"
 
 """
     Sample program to get predefined trading pair and timerange from binance via async

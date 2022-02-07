@@ -3,7 +3,7 @@
 
 __author__ = "Mohd Hafizuddin Bin Kamilin"
 __version__ = "0.1.3"
-__date__ = "23 May 2022"
+__date__ = "23 Jan 2022"
 
 """
     Sample program to get custom kline/ohlc(v) interval data from binance
