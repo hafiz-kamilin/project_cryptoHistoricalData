@@ -97,11 +97,10 @@ class GetAllBinanceData:
         # send somewhere else
         RESULTS.append(klines)
 
-    #  dummy task that sleep for predefined seconds
     async def dummy_task(self):
 
-        sleep(self.timer)
-        print("sleep")
+        await asyncio.sleep(2)
+        print("dummy thicc")
 
     # main async wrapper fucntion
     async def amain(self) -> None:
@@ -113,9 +112,9 @@ class GetAllBinanceData:
             await asyncio.gather(
                 *(
                     self.get_historical_klines(client) if (
-                        (self.trading_pair != 0) and
+                        (len(self.trading_pair) != 0) and
                         # TODO this shit is not working
-                        (int(client.response.headers['x-mbx-used-weight-1m']) < 1_000)
+                        (int(client.response.headers["x-mbx-used-weight"]) < 1_000)
                     ) else self.dummy_task() for _ in range(len(self.trading_pair))
                 )
             )
