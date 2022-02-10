@@ -10,6 +10,8 @@ __date__ = "7 Jan 2022"
     + TODO date range sanity test
     + TODO add write to csv
 
+    # MEMO drop async from the the next code as it will always exceed 1200 rate per minute
+
 """
 
 # use python-binance API to interact with binance
