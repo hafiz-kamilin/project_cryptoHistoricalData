@@ -6,9 +6,12 @@ __version__ = "0.5.1"
 __date__ = "10 Feb 2022"
 
 # use python-binance API to interact with binance
+from pkgutil import get_data
 from binance.client import Client
+# and csv to write the kline data
+import csv
 
-# refer to python-binance for update/change in supported interval
+# NOTE: refer to python-binance for update/change in supported interval
 SUPPORTED_INTERVAL = {
     '1m',
     '3m',
@@ -77,3 +80,45 @@ class BinanceHistoricalKlines:
         else:
             # return all trade trading pair
             return trading_pair
+
+    def get_binance_historical_klines(self, client: Client):
+
+        symbol = self.trading_pair.pop()
+
+        # get klines
+        klines = client.get_historical_klines(
+            symbol=symbol,
+            interval=self.interval,
+            start_str=self.start,
+            end_str=self.end
+        )
+
+        return klines, symbol
+
+    def save_to_csv(self, csv: csv):
+
+        # specify the column for the csv file
+        columns = [
+            'open_time', 'open', 'high', 'low', 'close', 'volume',
+            'close_time', 'quote_asset_volume', 'number_of_trades',
+            'taker_buy_base_asset_volume', 'taker_buy_quote_asset_volume',
+            'ignore'
+        ]
+
+        klines, symbol = self.get_binance_historical_klines(client=Client)
+
+        with open(symbol + '.csv', 'w', newline='') as f:
+            write = csv.writer(f)
+            write.writerow(columns)
+            write.writerows(klines)
+
+if __name__ == "__main__":
+
+    createHistoricalKlines = BinanceHistoricalKlines(
+        symbol="ust",
+        interval="1m",
+        start="2021-1-1 00:00:00",
+        end="2022-1-1 00:00:00"
+    )
+
+    createHistoricalKlines.save_to_csv(csv=csv)
