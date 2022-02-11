@@ -86,7 +86,7 @@ class BinanceHistoricalKlines:
         symbol = self.trading_pair.pop()
 
         # get klines
-        klines = client.get_historical_klines(
+        klines = Client().get_historical_klines(
             symbol=symbol,
             interval=self.interval,
             start_str=self.start,
@@ -115,10 +115,10 @@ class BinanceHistoricalKlines:
 if __name__ == "__main__":
 
     createHistoricalKlines = BinanceHistoricalKlines(
-        symbol="ust",
+        symbol="BNBUSDT",
         interval="1m",
         start="2021-1-1 00:00:00",
-        end="2022-1-1 00:00:00"
+        end="2021-1-2 00:00:00"
     )
 
     createHistoricalKlines.save_to_csv(csv=csv)
