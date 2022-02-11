@@ -138,7 +138,7 @@ class GetAllBinanceData:
 if __name__ == "__main__":
 
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(GetAllBinanceData(symbol="ust", interval="1m", start="2022-1-23 10:00:00", end="2022-1-23 10:01:00").amain())
+    loop.run_until_complete(GetAllBinanceData(symbol="bnbusdt", interval="1m", start="2022-1-23 10:00:00", end="2022-1-23 10:01:00").amain())
 
     print("Result: \n" + str(RESULTS))
     
