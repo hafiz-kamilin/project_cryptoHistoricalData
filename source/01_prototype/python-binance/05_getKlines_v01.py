@@ -6,7 +6,6 @@ __version__ = "0.5.1"
 __date__ = "10 Feb 2022"
 
 # use python-binance API to interact with binance
-from pkgutil import get_data
 from binance.client import Client
 # and csv to write the kline data
 import csv
