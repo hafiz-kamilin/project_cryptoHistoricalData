@@ -6,6 +6,7 @@ __version__ = "0.5.1"
 __date__ = "10 Feb 2022"
 
 # use python-binance API to interact with binance
+from typing import Tuple
 from binance.client import Client
 # and csv to write the kline data
 import csv
@@ -52,7 +53,7 @@ class BinanceHistoricalKlines:
             raise ValueError("Invalid kline interval parsed to the class!")
 
     # get specific/all trading pair from binance
-    def get_trading_pair(client: Client, symbol: str) -> list:
+    def get_trading_pair(self, symbol: str) -> list[str]:
 
         """
         get trading pair from binance
@@ -80,7 +81,7 @@ class BinanceHistoricalKlines:
             # return all trade trading pair
             return trading_pair
 
-    def get_binance_historical_klines(self, client: Client):
+    def get_binance_historical_klines(self) -> Tuple[list, str]:
 
         symbol = self.trading_pair.pop()
 
@@ -94,7 +95,7 @@ class BinanceHistoricalKlines:
 
         return klines, symbol
 
-    def save_to_csv(self, csv: csv):
+    def save_to_csv(self) -> None:
 
         # specify the column for the csv file
         columns = [
@@ -104,7 +105,7 @@ class BinanceHistoricalKlines:
             'ignore'
         ]
 
-        klines, symbol = self.get_binance_historical_klines(client=Client)
+        klines, symbol = self.get_binance_historical_klines()
 
         with open(symbol + '.csv', 'w', newline='') as f:
             write = csv.writer(f)
@@ -116,8 +117,8 @@ if __name__ == "__main__":
     createHistoricalKlines = BinanceHistoricalKlines(
         symbol="BNBUSDT",
         interval="1m",
-        start="2021-1-1 00:00:00",
-        end="2021-1-2 00:00:00"
+        start="2022-1-23 10:00:00",
+        end="2022-1-23 10:01:00"
     )
 
-    createHistoricalKlines.save_to_csv(csv=csv)
+    createHistoricalKlines.save_to_csv()
