@@ -148,5 +148,5 @@ if __name__ == "__main__":
         end="2022-1-31 00:00:00"
     )
 
-    createHistoricalKlines.save_to_feather()
+    # createHistoricalKlines.save_to_feather()
     createHistoricalKlines.save_to_csv()
