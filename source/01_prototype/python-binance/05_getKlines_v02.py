@@ -16,6 +16,10 @@ import csv
 
 class BinanceHistoricalKlines:
 
+    ##################################
+    # initialization and preparation #
+    ##################################
+
     def __init__(self, symbol: str, interval: str, start: str, end: None) -> None:
 
         """
@@ -43,12 +47,19 @@ class BinanceHistoricalKlines:
         }
         # specify the column for the klines
         self.columns = [
-            'open_time', 'open', 'high', 'low', 'close', 'volume',
-            'close_time', 'quote_asset_volume', 'number_of_trades',
-            'taker_buy_base_asset_volume', 'taker_buy_quote_asset_volume',
+            'open_time',
+            'open',
+            'high',
+            'low',
+            'close',
+            'volume',
+            'close_time',
+            'quote_asset_volume',
+            'number_of_trades',
+            'taker_buy_base_asset_volume',
+            'taker_buy_quote_asset_volume',
             'ignore'
         ]
-
 
         # initalize the trading pair
         self.trading_pair = self.get_trading_pair(symbol=symbol)
@@ -96,6 +107,10 @@ class BinanceHistoricalKlines:
             # return all trade trading pair
             return trading_pair
 
+    ##############################################
+    # get the klines and priming it for analysis #
+    ##############################################
+
     # get the historical klines from binance
     def get_binance_historical_klines(self) -> Tuple[list, str]:
 
@@ -118,6 +133,15 @@ class BinanceHistoricalKlines:
 
         return klines, symbol
 
+    # substitute missing data
+    def fill_missing_data(self):
+
+        pass
+
+    #####################################################
+    # store the klines as human-readable or binary file #
+    #####################################################
+
     # save the klines as csv
     def save_to_csv(self) -> None:
 
@@ -138,6 +162,10 @@ class BinanceHistoricalKlines:
         df = pd.DataFrame(data=klines, columns=self.columns)
         # write the dataframe as feather file
         df.to_feather(symbol + ".feather", compression="zstd")
+
+########
+# main #
+########
 
 if __name__ == "__main__":
 
