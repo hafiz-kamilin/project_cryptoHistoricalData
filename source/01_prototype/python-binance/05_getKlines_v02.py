@@ -137,7 +137,7 @@ class BinanceHistoricalKlines:
         # convert nested list into a dataframe
         df = pd.DataFrame(data=klines, columns=self.columns)
         # write the dataframe as feather file
-        df.to_feather(symbol + ".feather")
+        df.to_feather(symbol + ".feather", compression="zstd")
 
 if __name__ == "__main__":
 
@@ -148,5 +148,5 @@ if __name__ == "__main__":
         end="2022-1-31 00:00:00"
     )
 
-    # createHistoricalKlines.save_to_feather()
-    createHistoricalKlines.save_to_csv()
+    createHistoricalKlines.save_to_feather()
+    # createHistoricalKlines.save_to_csv()
