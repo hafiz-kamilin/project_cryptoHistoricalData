@@ -41,6 +41,14 @@ class BinanceHistoricalKlines:
             '1w',
             '1M'
         }
+        # specify the column for the klines
+        self.columns = [
+            'open_time', 'open', 'high', 'low', 'close', 'volume',
+            'close_time', 'quote_asset_volume', 'number_of_trades',
+            'taker_buy_base_asset_volume', 'taker_buy_quote_asset_volume',
+            'ignore'
+        ]
+
 
         # initalize the trading pair
         self.trading_pair = self.get_trading_pair(symbol=symbol)
@@ -89,14 +97,15 @@ class BinanceHistoricalKlines:
             return trading_pair
 
     # get the historical klines from binance
-    def get_binance_historical_klines(self) -> Tuple[pd.DataFrame, str]:
+    def get_binance_historical_klines(self) -> Tuple[list, str]:
 
         """
             get the historical klines from the self. parameters and return as tuple,
-            which contain dataframes (klines) and str (trading symbol)
+            which contain nested list (klines) and str (trading symbol)
         
         """
 
+        # remove the trading pair to be processed from the queue
         symbol = self.trading_pair.pop()
 
         # get klines
@@ -109,22 +118,35 @@ class BinanceHistoricalKlines:
 
         return klines, symbol
 
+    # save the klines as csv
     def save_to_csv(self) -> None:
 
         klines, symbol = self.get_binance_historical_klines()
 
+        # write the column and klines as csv file
         with open(symbol + '.csv', 'w', newline='') as f:
             write = csv.writer(f)
-            write.writerow(columns)
+            write.writerow(self.columns)
             write.writerows(klines)
+
+    # save the klines as feather
+    def save_to_feather(self) -> None:
+
+        klines, symbol = self.get_binance_historical_klines()
+
+        # convert nested list into a dataframe
+        df = pd.DataFrame(data=klines, columns=self.columns)
+        # write the dataframe as feather file
+        df.to_feather(symbol + ".feather")
 
 if __name__ == "__main__":
 
     createHistoricalKlines = BinanceHistoricalKlines(
         symbol="BNBUSDT",
         interval="1m",
-        start="2022-1-23 10:00:00",
-        end="2022-1-23 10:01:00"
+        start="2022-1-1 00:00:00",
+        end="2022-1-31 00:00:00"
     )
 
+    createHistoricalKlines.save_to_feather()
     createHistoricalKlines.save_to_csv()
