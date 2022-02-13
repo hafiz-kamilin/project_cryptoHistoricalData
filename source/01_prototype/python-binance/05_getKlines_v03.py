@@ -16,10 +16,7 @@ import csv
 
 class BinanceHistoricalKlines:
 
-    ##################################
-    # initialization and preparation #
-    ##################################
-
+    # initialize the parameters to get the klines, check if the parameters is valid, and get trading pair
     def __init__(self, symbol: str, interval: str, start: str, end: None) -> None:
 
         """
@@ -27,6 +24,35 @@ class BinanceHistoricalKlines:
             passed the sanity test
         
         """
+
+        # get specific/all trading pair from binance
+        def get_trading_pair(symbol: str) -> list[str]:
+
+            """
+                get trading pair from binance
+
+                usage:
+                1. get_trading_pair(pairing=None)
+                - get all available trading pair from binance 
+                2. get_trading_pair(pairing="USDT")
+                - get all USDT trading pair from binance
+
+            """
+
+            # extract trading pairs information from binance
+            info = Client().get_all_tickers()
+            # filter the information to get the trading pair symbols only
+            trading_pair = list(map(lambda pair: pair['symbol'], info))
+
+            # if we want trading pair for specific symbol (e.g., ETH)
+            if symbol is not None:
+                # play safe; just in case someone forgot to capitalize the whole str
+                symbol = symbol.upper()
+                # return trading pair that has the specific symbol
+                return list(filter(lambda x: x.endswith(symbol), trading_pair))
+            else:
+                # return all trade trading pair
+                return trading_pair
 
         # NOTE: refer to python-binance for update/change in supported interval
         supported_interval = {
@@ -61,8 +87,8 @@ class BinanceHistoricalKlines:
             'ignore'
         ]
 
-        # initalize the trading pair
-        self.trading_pair = self.get_trading_pair(symbol=symbol)
+         # initalize the trading pair
+        self.trading_pair = get_trading_pair(symbol=symbol)
         print("\nTrading pair: " + ', '.join(self.trading_pair))
         # pass valid kline interval only (check if the parsed str for kline interval is correct or not)
         self.interval = (interval if interval in supported_interval else None)
@@ -78,41 +104,8 @@ class BinanceHistoricalKlines:
         elif (self.interval is None):
             raise ValueError("Invalid kline interval parsed to the class!")
 
-    # get specific/all trading pair from binance
-    def get_trading_pair(self, symbol: str) -> list[str]:
-
-        """
-            get trading pair from binance
-
-            usage:
-            1. get_trading_pair(pairing=None)
-            - get all available trading pair from binance 
-            2. get_trading_pair(pairing="USDT")
-            - get all USDT trading pair from binance
-
-        """
-
-        # extract trading pairs information from binance
-        info = Client().get_all_tickers()
-        # filter the information to get the trading pair symbols only
-        trading_pair = list(map(lambda pair: pair['symbol'], info))
-
-        # if we want trading pair for specific symbol (e.g., ETH)
-        if symbol is not None:
-            # play safe; just in case someone forgot to capitalize the whole str
-            symbol = symbol.upper()
-            # return trading pair that has the specific symbol
-            return list(filter(lambda x: x.endswith(symbol), trading_pair))
-        else:
-            # return all trade trading pair
-            return trading_pair
-
-    ##############################################
-    # get the klines and priming it for analysis #
-    ##############################################
-
     # get the historical klines from binance
-    def get_binance_historical_klines(self) -> Tuple[list, str]:
+    def get_historical_klines(self) -> Tuple[list, str]:
 
         """
             get the historical klines from the self. parameters and return as tuple,
@@ -133,35 +126,28 @@ class BinanceHistoricalKlines:
 
         return klines, symbol
 
-    # substitute missing data
-    def fill_missing_data(self):
+    def save_to_file(self, format: str) -> None:
 
-        pass
+        for _ in range(len(self.trading_pair)):
 
-    #####################################################
-    # store the klines as human-readable or binary file #
-    #####################################################
+            klines, symbol = self.get_historical_klines()
 
-    # save the klines as csv
-    def save_to_csv(self) -> None:
+            if (format == "csv"):
 
-        klines, symbol = self.get_binance_historical_klines()
+                # write the column and klines as csv file
+                with open(symbol + '.csv', 'w', newline='') as f:
+                    write = csv.writer(f)
+                    write.writerow(self.columns)
+                    write.writerows(klines)
 
-        # write the column and klines as csv file
-        with open(symbol + '.csv', 'w', newline='') as f:
-            write = csv.writer(f)
-            write.writerow(self.columns)
-            write.writerows(klines)
+            elif (format == "feather"):
 
-    # save the klines as feather
-    def save_to_feather(self) -> None:
+                # convert nested list into a dataframe
+                df = pd.DataFrame(data=klines, columns=self.columns)
+                # write the dataframe as feather file
+                df.to_feather(symbol + ".feather", compression="zstd")
 
-        klines, symbol = self.get_binance_historical_klines()
 
-        # convert nested list into a dataframe
-        df = pd.DataFrame(data=klines, columns=self.columns)
-        # write the dataframe as feather file
-        df.to_feather(symbol + ".feather", compression="zstd")
 
 ########
 # main #
@@ -170,11 +156,10 @@ class BinanceHistoricalKlines:
 if __name__ == "__main__":
 
     createHistoricalKlines = BinanceHistoricalKlines(
-        symbol="BNBUSDT",
+        symbol="ust",
         interval="1m",
         start="2022-1-1 00:00:00",
-        end="2022-1-31 00:00:00"
+        end="2022-2-1 00:00:00"
     )
 
-    createHistoricalKlines.save_to_feather()
-    # createHistoricalKlines.save_to_csv()
+    createHistoricalKlines.save_to_file("feather")
