@@ -7,21 +7,21 @@ __date__ = "13 Feb 2022"
 
 # use python-binance API to interact with binance
 from binance.client import Client
-# provides runtime support for type hints
-from typing import Tuple
-# data processing with panda
+# data processing and saving as feather
 import pandas as pd
-# and csv to write the kline data
+# data saving as pickle
+import pickle
+# # data saving as csv
 import csv
 
 class BinanceHistoricalKlines:
 
-    # initialize the parameters to get the klines, check if the parameters is valid, and get trading pair
     def __init__(self, symbol: str, interval: str, start: str, end: None) -> None:
 
         """
-            initializing the variables and check if the parsed variables to class
-            passed the sanity test
+            1. initialize the parameters to get the klines,
+            2. check if the parameters is valid, 
+            3. and get the trading pair
         
         """
 
@@ -104,12 +104,14 @@ class BinanceHistoricalKlines:
         elif (self.interval is None):
             raise ValueError("Invalid kline interval parsed to the class!")
 
-    # get the historical klines from binance
-    def get_historical_klines(self) -> Tuple[list, str]:
+    def get_historical_klines(self) -> tuple[list, str]:
 
         """
-            get the historical klines from the self. parameters and return as tuple,
-            which contain nested list (klines) and str (trading symbol)
+            get the historical klines from the binance and return as tuple,
+            which contain
+            
+            1. nested list (klines) 
+            2. str (trading symbol)
         
         """
 
@@ -128,6 +130,14 @@ class BinanceHistoricalKlines:
 
     def save_to_file(self, format: str) -> None:
 
+        """
+        save the downloaded klines from binance as csv/feather/pickle
+        NOTE: for the sake of simplicity, we call 
+              self.get_historical_klines() function
+              in here instead
+        
+        """
+
         for _ in range(len(self.trading_pair)):
 
             klines, symbol = self.get_historical_klines()
@@ -135,26 +145,26 @@ class BinanceHistoricalKlines:
             if (format == "csv"):
 
                 # write the column and klines as csv file
-                with open(symbol + '.csv', 'w', newline='') as f:
+                with open(symbol + "_" + self.interval + ".csv", 'w', newline='') as f:
                     write = csv.writer(f)
                     write.writerow(self.columns)
                     write.writerows(klines)
+
+            elif (format == "pickle"):
+
+                with open(symbol + "_" + self.interval + ".pickle", 'wb') as handle:
+                    pickle.dump(klines, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
             elif (format == "feather"):
 
                 # convert nested list into a dataframe
                 df = pd.DataFrame(data=klines, columns=self.columns)
                 # write the dataframe as feather file
-                df.to_feather(symbol + ".feather", compression="zstd")
-
-
-
-########
-# main #
-########
+                df.to_feather(symbol + "_" + self.interval + ".feather", compression="zstd")
 
 if __name__ == "__main__":
 
+    # initialize the BinanceHistoricalKlines class
     createHistoricalKlines = BinanceHistoricalKlines(
         symbol="ust",
         interval="1m",
@@ -162,4 +172,5 @@ if __name__ == "__main__":
         end="2022-2-1 00:00:00"
     )
 
+    # store the klines data as file
     createHistoricalKlines.save_to_file("feather")
