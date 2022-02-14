@@ -101,8 +101,7 @@ class GetAllBinanceData:
 
     async def dummy_task(self):
 
-        await asyncio.sleep(2)
-        print("dummy thicc")
+        sleep(10)
 
     # main async wrapper fucntion
     async def amain(self) -> None:
@@ -126,7 +125,7 @@ class GetAllBinanceData:
 if __name__ == "__main__":
 
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(GetAllBinanceData(symbol="usdt", interval="1m", start="2022-1-23 10:00:00", end="2022-1-23 10:01:00").amain())
+    loop.run_until_complete(GetAllBinanceData(symbol="usdt", interval="1m", start="2022-1-1 00:00:00", end="2022-2-1 00:00:00").amain())
 
     print("Result: \n" + str(RESULTS))
     
