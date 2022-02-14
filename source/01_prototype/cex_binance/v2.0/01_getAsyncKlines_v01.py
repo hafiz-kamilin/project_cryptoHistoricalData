@@ -16,7 +16,7 @@ import csv
 
 class BinanceHistoricalKlines:
 
-    def __init__(self, symbol: str, interval: str, start: str, end: None) -> None:
+    def __init__(self, symbol: str, interval: str, start: str, end: str) -> None:
 
         """
             1. initialize the parameters to get the klines,
