@@ -166,7 +166,7 @@ if __name__ == "__main__":
 
     # initialize the BinanceHistoricalKlines class
     createHistoricalKlines = BinanceHistoricalKlines(
-        symbol="ust",
+        symbol="usdt",
         interval="1m",
         start="2022-1-1 00:00:00",
         end="2022-2-1 00:00:00"
