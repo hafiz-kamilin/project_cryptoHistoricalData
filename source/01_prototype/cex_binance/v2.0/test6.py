@@ -1,6 +1,7 @@
 from binance import Client, AsyncClient
 from time import sleep
 import asyncio
+import csv
 
 class GetAllBinanceData:
 
@@ -8,24 +9,45 @@ class GetAllBinanceData:
 
         self.weight = 0
         self.count = 0
+        self.symbols = [
+            "BTCUSDT", 
+            "ETHUSDT", 
+            "BNBUSDT", 
+            "BCCUSDT", 
+            "NEOUSDT", 
+            "LTCUSDT", 
+            "QTUMUSDT", 
+            "ADAUSDT", 
+            "XRPUSDT", 
+            "EOSUSDT"
+        ]
 
     async def test_call(self, client: AsyncClient):
 
+        symbol = self.symbols.pop()
 
         # get kline based on the predefined kline interval
         klines = await client.get_historical_klines(
-            symbol="BNBUSDT",
+            symbol=symbol,
             interval="1m",
             start_str="2021-1-1 0:00:00",
-            end_str="2021-1-3 00:00:00"
+            end_str="2021-1-7 00:00:00"
         )
 
+        with open(symbol + '.csv', 'w', newline='') as f:
+            write = csv.writer(f)
+            write.writerows(klines)
+
         self.weight = int(Client().response.headers["x-mbx-used-weight"])
-        print("Weight" + str(self.weight))
+        print("Weight " + str(self.weight))
         self.count += 1
-        print("Count" + str(self.count))
+        print("Count " + str(self.count))
 
         # client.response.headers["x-mbx-used-weight"]
+
+    def end_of_loop(self):
+        
+        pass
 
     async def amain(self) -> None:
 
@@ -33,7 +55,7 @@ class GetAllBinanceData:
 
         await asyncio.gather(
             *(
-                self.test_call(client) if (self.weight < 10) else None for _ in range(10)
+                self.test_call(client) if (self.weight < 10) else self.end_of_loop() for _ in range(10)
             )
         )
 
