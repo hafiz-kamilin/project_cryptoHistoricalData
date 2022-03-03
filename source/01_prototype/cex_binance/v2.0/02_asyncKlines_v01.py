@@ -125,7 +125,14 @@ class BinanceHistoricalKlines:
         # initialize log
         self.logged = logged
         if self.logged is True:
-            logging.basicConfig(filename='record.log', encoding='utf-8', level=logging.DEBUG, format='%(levelname)s \n%(message)s')
+            logging.basicConfig(
+                filename="record.log",
+                filemode = "w+",
+                encoding="utf-8",
+                level=logging.DEBUG,
+                format="%(levelname)s \n%(message)s"
+            )
+            # disable log from the imported library; we want to focus only on the main program
             list_of_logger_to_ignore = list(logging.Logger.manager.loggerDict.keys())
             for logger in list_of_logger_to_ignore:
                 logging.getLogger(logger).disabled = True
@@ -150,7 +157,7 @@ class BinanceHistoricalKlines:
         )
         print(output_str)
 
-        # logging
+        # log the parsed/processed parameters
         if self.logged is True:
             logging.info(" Timestamp: " + str(time()))
             logging.info(output_str)
@@ -161,11 +168,12 @@ class BinanceHistoricalKlines:
     async def get_historical_klines(self, symbol: str, start: str, end: str, sequence: str) -> None:
 
         """
-            get the historical klines from the binance and save it to self.raw_results
+            fetch the historical klines from Ninance and save it into a dictionary (self.raw_results)
+            NOTE: the data on the dictionary need to be joined and cleaned up!
         
         """
 
-        # get klines
+        # fetch the klines for the specified symbol, interval, and timeframe
         klines = await AsyncClient().get_historical_klines(
             symbol=symbol,
             interval=self.interval,
@@ -173,14 +181,8 @@ class BinanceHistoricalKlines:
             end_str=end
         )
         
-        # logging
-        if self.logged is True:
-            logging.debug(
-                "  - Total request weight consumed: " + Client().response.headers["x-mbx-used-weight"]
-            )
-
+        # save the fetched klines into the dictionary
         self.raw_results[sequence] = klines
-        print("")
 
     async def amain(self) -> None:
 
@@ -193,9 +195,15 @@ class BinanceHistoricalKlines:
                     start="2022-1-1 00:00:00",
                     end="2022-2-1 00:00:00",
                     sequence=str(i)
-                ) for i in range(3)
+                ) for i in range(10)
             )
         )
+
+        # log the current total request weight consumed
+        if self.logged is True:
+            logging.debug(
+                "  - Total request weight consumed: " + Client().response.headers["x-mbx-used-weight"]
+            )
 
         await client.close_connection()
 
@@ -237,7 +245,7 @@ if __name__ == "__main__":
 
     # initialize the BinanceHistoricalKlines class
     createHistoricalKlines = BinanceHistoricalKlines(
-        symbol="ust",
+        symbol="BTCUSDT",
         interval="1m",
         start="2022-1-1 00:00:00",
         end="2022-2-1 00:00:00",
