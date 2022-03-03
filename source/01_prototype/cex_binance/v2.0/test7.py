@@ -11,15 +11,15 @@ class GetAllBinanceData:
         self.count = 0
         self.symbols = [
             "BTCUSDT", 
-            "ETHUSDT", 
-            "BNBUSDT", 
-            "BCCUSDT", 
-            "NEOUSDT", 
-            "LTCUSDT", 
-            "QTUMUSDT", 
-            "ADAUSDT", 
-            "XRPUSDT", 
-            "EOSUSDT"
+            "BTCUSDT", 
+            "BTCUSDT", 
+            "BTCUSDT", 
+            "BTCUSDT", 
+            "BTCUSDT", 
+            "BTCUSDT", 
+            "BTCUSDT", 
+            "BTCUSDT", 
+            "BTCUSDT"
         ]
 
     async def test_call(self, weight, client: AsyncClient):
@@ -33,7 +33,7 @@ class GetAllBinanceData:
                 symbol=symbol,
                 interval="1m",
                 start_str="2021-1-1 0:00:00",
-                end_str="2021-1-7 00:00:00"
+                end_str="2021-1-31 00:00:00"
             )
 
             with open(symbol + '.csv', 'w', newline='') as f:
