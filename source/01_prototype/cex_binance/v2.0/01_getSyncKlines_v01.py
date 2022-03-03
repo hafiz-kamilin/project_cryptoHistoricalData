@@ -3,22 +3,22 @@
 
 __author__ = "Mohd Hafizuddin Bin Kamilin"
 __version__ = "1.1.1"
-__date__ = "13 Feb 2022"
+__date__ = "3 March 2022"
 
 """
-    + add filter to remove UP/DOWN trading pair
+    + add filter to remove leveraged trading pair
 
 """
 
 # use python-binance API to interact with binance
-from inspect import trace
 from binance.client import Client
-from numpy import true_divide
+# to get the current time in timestamp
+from time import time
 # data processing and saving as feather
 import pandas as pd
 # data saving as pickle
 import pickle
-# # data saving as csv
+# data saving as csv
 import csv
 
 class BinanceHistoricalKlines:
@@ -39,48 +39,46 @@ class BinanceHistoricalKlines:
                 get trading pair from binance
 
                 usage:
-                1. get_trading_pair(pairing=None)
-                - get all available trading pair from binance 
-                2. get_trading_pair(pairing="USDT")
-                - get all USDT trading pair from binance
+                1. get_trading_pair(symbol=None, include_leverage=False)
+                   = get all available trading pair (excluding leveraged trading pair) from binance 
+                2. get_trading_pair(symbol="USDT", include_leverage=False)
+                   = get all USDT trading pair (excluding leveraged trading pair) from binance
 
             """
 
             # extract trading pairs information from binance
             info = Client().get_all_tickers()
             # filter the information to get the trading pair symbols only
-            trading_pair = list(map(lambda pair: pair['symbol'], info))
+            trading_pair = list(map(lambda pair: pair["symbol"], info))
 
             # remove leveraged trading pair (UP/DOWN) from the trading_pair
-            if include_leverage is False: 
-            
-                leverageDownIndex = []
-                leverageUpElement = []
-
-                # find all down
+            if include_leverage is False:
+                to_remove = []
+                # find UP/DOWN trading pair
                 for i in range(len(trading_pair)):
                     if ("DOWN" in trading_pair[i]) is True:
-                        leverageDownIndex.append(i)
-
-                
-
-
-
-
-            # textfile = open("trading_pair.txt", "w")
-            # for element in trading_pair:
-            #     textfile.write(element + "\n")
-            # textfile.close()
+                        # save the element for the DOWN trading pair we found
+                        to_remove.append(trading_pair[i])
+                        # replace the "DOWN" str with "UP" to get the UP trading pair, and save it
+                        to_remove.append(trading_pair[i].replace("DOWN", "UP"))
+                # remove down token
+                for element in to_remove:
+                    trading_pair.remove(element)
 
             # if we want trading pair for specific symbol (e.g., ETH)
             if symbol is not None:
                 # play safe; just in case someone forgot to capitalize the whole str
                 symbol = symbol.upper()
-                # return trading pair that has the specific symbol
-                return list(filter(lambda x: x.endswith(symbol), trading_pair))
-            else:
-                # return all trade trading pair
-                return trading_pair
+                # create a list with a trading pairs that has the specific symbol only
+                trading_pair = list(filter(lambda x: x.endswith(symbol), trading_pair))
+
+            # save the trading pair as txt file
+            txt = open("tradingPair_" + str(int(time())) + ".txt", "w")
+            for element in trading_pair:
+                txt.write(element + "\n")
+            txt.close()
+            # return the trading pair
+            return trading_pair
 
         # NOTE: refer to python-binance for update/change in supported interval
         supported_interval = {
@@ -115,8 +113,8 @@ class BinanceHistoricalKlines:
             'ignore'
         ]
 
-         # initalize the trading pair
-        self.trading_pair = get_trading_pair(symbol=symbol)
+        # initalize the trading pair
+        self.trading_pair = get_trading_pair(symbol=symbol, include_leverage=False)
         print("\nTrading pair: " + ', '.join(self.trading_pair))
         # pass valid kline interval only (check if the parsed str for kline interval is correct or not)
         self.interval = (interval if interval in supported_interval else None)
@@ -194,7 +192,7 @@ if __name__ == "__main__":
 
     # initialize the BinanceHistoricalKlines class
     createHistoricalKlines = BinanceHistoricalKlines(
-        symbol=None,
+        symbol="ust",
         interval="1m",
         start="2022-1-1 00:00:00",
         end="2022-2-1 00:00:00"
