@@ -112,6 +112,8 @@ class BinanceHistoricalKlines:
             "taker_buy_quote_asset_volume",
             "ignore"
         ]
+        # initialize dictionary to append the aggregated, unprocessed results
+        self.raw_results = {}
 
         # initalize the trading pair
         self.trading_pair = get_trading_pair(symbol=symbol, include_leverage=include_leverage)
@@ -124,6 +126,9 @@ class BinanceHistoricalKlines:
         self.logged = logged
         if self.logged is True:
             logging.basicConfig(filename='record.log', encoding='utf-8', level=logging.DEBUG, format='%(levelname)s \n%(message)s')
+            list_of_logger_to_ignore = list(logging.Logger.manager.loggerDict.keys())
+            for logger in list_of_logger_to_ignore:
+                logging.getLogger(logger).disabled = True
 
         # sanity test
         if (self.trading_pair == []) and (self.interval is None):
@@ -153,60 +158,80 @@ class BinanceHistoricalKlines:
                 " Trading pair: " + "\n  - " + "\n  - ".join(self.trading_pair)
             )
 
-    async def get_historical_klines(self, symbol: str, start: str, end: str, tag: str, client: AsyncClient) -> tuple[list, str]:
+    async def get_historical_klines(self, symbol: str, start: str, end: str, sequence: str) -> None:
 
         """
-            get the historical klines from the binance and return as tuple,
-            
-            which contain
-            1. nested list (klines) 
-            2. identifier to know on which sequence we should append the result (tag)
+            get the historical klines from the binance and save it to self.raw_results
         
         """
 
-        # get kline based on the predefined kline interval
-        klines = await client.get_historical_klines(
+        # get klines
+        klines = await AsyncClient().get_historical_klines(
             symbol=symbol,
             interval=self.interval,
             start_str=start,
             end_str=end
         )
-
-        return klines, tag
-
-    def save_to_file(self, format: str) -> None:
-
-        """
-        save the downloaded klines from binance as csv/feather/pickle
-        NOTE: for the sake of simplicity, we call 
-              self.get_historical_klines() function
-              in here instead
         
-        """
+        # logging
+        if self.logged is True:
+            logging.debug(
+                "  - Total request weight consumed: " + Client().response.headers["x-mbx-used-weight"]
+            )
 
-        for _ in range(len(self.trading_pair)):
+        self.raw_results[sequence] = klines
+        print("")
 
-            klines, symbol = self.get_historical_klines()
+    async def amain(self) -> None:
 
-            if (format == "csv"):
+        client = await AsyncClient.create()
 
-                # write the column and klines as csv file
-                with open(symbol + "_" + self.interval + ".csv", "w", newline="") as f:
-                    write = csv.writer(f)
-                    write.writerow(self.columns)
-                    write.writerows(klines)
+        await asyncio.gather(
+            *(
+                self.get_historical_klines(
+                    symbol="ETHUST",
+                    start="2022-1-1 00:00:00",
+                    end="2022-2-1 00:00:00",
+                    sequence=str(i)
+                ) for i in range(3)
+            )
+        )
 
-            elif (format == "pickle"):
+        await client.close_connection()
 
-                with open(symbol + "_" + self.interval + ".pickle", "wb") as handle:
-                    pickle.dump(klines, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    # def save_to_file(self, format: str) -> None:
 
-            elif (format == "feather"):
+    #     """
+    #     save the downloaded klines from binance as csv/feather/pickle
+    #     NOTE: for the sake of simplicity, we call 
+    #           self.get_historical_klines() function
+    #           in here instead
+        
+    #     """
 
-                # convert nested list into a dataframe
-                df = pd.DataFrame(data=klines, columns=self.columns)
-                # write the dataframe as feather file
-                df.to_feather(symbol + "_" + self.interval + ".feather", compression="zstd")
+    #     for _ in range(len(self.trading_pair)):
+
+    #         klines, symbol = self.get_historical_klines()
+
+    #         if (format == "csv"):
+
+    #             # write the column and klines as csv file
+    #             with open(symbol + "_" + self.interval + ".csv", "w", newline="") as f:
+    #                 write = csv.writer(f)
+    #                 write.writerow(self.columns)
+    #                 write.writerows(klines)
+
+    #         elif (format == "pickle"):
+
+    #             with open(symbol + "_" + self.interval + ".pickle", "wb") as handle:
+    #                 pickle.dump(klines, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+    #         elif (format == "feather"):
+
+    #             # convert nested list into a dataframe
+    #             df = pd.DataFrame(data=klines, columns=self.columns)
+    #             # write the dataframe as feather file
+    #             df.to_feather(symbol + "_" + self.interval + ".feather", compression="zstd")
 
 if __name__ == "__main__":
 
@@ -220,5 +245,5 @@ if __name__ == "__main__":
         logged=True
     )
 
-    # store the klines data as file
-    createHistoricalKlines.save_to_file("feather")
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(createHistoricalKlines.amain())
