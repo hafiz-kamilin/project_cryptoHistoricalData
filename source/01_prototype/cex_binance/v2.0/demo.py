@@ -1,19 +1,41 @@
-import logging
+start = 0
+end = 50
 
-import logging
+divisor = 7
 
-# logging.basicConfig(filename='example.log', encoding='utf-8', level=logging.DEBUG, format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
-# logging.debug('This message should go to\n the log file')
-# logging.info('So should this')
-# logging.warning('And this, too')
-# logging.error('And non-ASCII stuff, too, like Øresund and Malmö')
+quotient = int(end / divisor)
+remainder = end % divisor
 
+divided_start = []
+divided_end = []
 
-# logging.basicConfig(level=logging.DEBUG)
+if quotient != 0:
 
-logging.basicConfig(filename='app.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s')
-logging.warning('This will get logged to a file')
+    for i in range(quotient):
 
-logging.info('This is an info message')
-a = logging.getLoggerClass().root.handlers
-print(logging.getLoggerClass().root.handlers)
+        if i == 0:
+            divided_start.append(start)
+        else:
+            divided_start.append(start + 1)
+
+        start += divisor
+        divided_end.append(start)
+
+        print(str(divided_start[i]) + " - " + str(divided_end[i]))
+
+    if remainder != 0:
+
+        divided_start.append(start + 1)
+
+        start += remainder
+        divided_end.append(start)
+
+        print(str(divided_start[-1]) + " - " + str(divided_end[-1]))
+
+else:
+
+    divided_start.append(start)
+
+    start += remainder
+    divided_end.append(start)
+    print(str(divided_start[0]) + " - " + str(divided_end[0]))
