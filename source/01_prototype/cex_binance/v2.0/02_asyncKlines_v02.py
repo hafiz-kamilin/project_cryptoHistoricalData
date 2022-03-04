@@ -111,6 +111,11 @@ class BinanceHistoricalKlines:
             "taker_buy_quote_asset_volume",
             "ignore"
         ]
+        # initialize the active number of concurrent function to fetch the klines
+        # NOTE: hard limit for active number of concurrent function to fetch the klines
+        #       is set to 10, and the average weight taken for 10 concurrent 
+        #       fetching function is around 450-950; the max limit allowed by binance is 1200.
+        self.concurrent_limit = 10
         # initialize dictionary to append the aggregated, unprocessed results
         self.raw_results = {}
 
@@ -136,7 +141,7 @@ class BinanceHistoricalKlines:
             for logger in list_of_logger_to_ignore:
                 logging.getLogger(logger).disabled = True
 
-        # sanity test
+        # sanity tests
         if (self.trading_pairs == []) and (self.interval is None):
             raise ValueError("Invalid symbol and kline interval parsed to the class!") 
         elif (self.trading_pairs == []):
@@ -202,10 +207,8 @@ class BinanceHistoricalKlines:
                         start="2022-1-1 00:00:00",
                         end="2022-2-1 00:00:00",
                         sequence=str(i)
-                    # hard limit for concurrent fetch klines function is set to 10
-                    # NOTE: the average weight taken for 10 concurrent fetching function is around 450-950;
-                    #       the max limit allowed by binance is 1200.
-                    ) for i in range(10)
+                    # adhire the self.concurrent_limit
+                    ) for i in range(self.concurrent_limit)
                 )
             )
 
