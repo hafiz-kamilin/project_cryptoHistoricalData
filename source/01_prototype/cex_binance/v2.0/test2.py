@@ -1,7 +1,10 @@
 from datetime import datetime
+import pytz
 
-timestamp = 1609430400
-dt_object = datetime.fromtimestamp(timestamp)
+tz = pytz.timezone('UTC')
 
-print("dt_object =", dt_object)
+timestamp = 1609459200000 / 1000 # 1609430400
+dt_object = datetime.fromtimestamp(timestamp, tz)
+
+print("dt_object =", str(dt_object)[:-6])
 print("type(dt_object) =", type(dt_object))
