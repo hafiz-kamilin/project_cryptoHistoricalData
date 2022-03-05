@@ -36,49 +36,6 @@ class BinanceHistoricalKlines:
         
         """
 
-        # get specific/all trading pairs from binance
-        def get_trading_pairs(symbol: str, include_leverage: bool) -> list[str]:
-
-            """
-                get trading pairs from binance
-
-                usage:
-                1. get_trading_pairs(symbol=None, include_leverage=False)
-                   = get all available trading pairs (excluding leveraged trading pairs) from binance 
-                2. get_trading_pairs(symbol="USDT", include_leverage=False)
-                   = get all USDT trading pairs (excluding leveraged trading pairs) from binance
-
-            """
-
-            # extract trading pairs information from binance
-            info = Client().get_all_tickers()
-            # filter the information to get the trading pairs symbols only
-            trading_pairs = list(map(lambda pair: pair["symbol"], info))
-
-            # remove leveraged trading pairs (UP/DOWN) from the trading_pairs
-            if include_leverage is False:
-                to_remove = []
-                # find UP/DOWN trading pairs
-                for i in range(len(trading_pairs)):
-                    if ("DOWN" in trading_pairs[i]) is True:
-                        # save the element for the DOWN trading pairs we found
-                        to_remove.append(trading_pairs[i])
-                        # replace the "DOWN" str with "UP" to get the UP trading pairs, and save it
-                        to_remove.append(trading_pairs[i].replace("DOWN", "UP"))
-                # remove down token
-                for element in to_remove:
-                    trading_pairs.remove(element)
-
-            # if we want trading pairs for specific symbol (e.g., ETH)
-            if symbol is not None:
-                # play safe; just in case someone forgot to capitalize the whole str
-                symbol = symbol.upper()
-                # create a list with a trading pairs that has the specific symbol only
-                trading_pairs = list(filter(lambda x: x.endswith(symbol), trading_pairs))
-
-            # return the trading pairs
-            return trading_pairs
-
         # NOTE: refer to python-binance for update/change in supported interval
         supported_interval = {
             "1m",
@@ -111,7 +68,7 @@ class BinanceHistoricalKlines:
         self.raw_results = {}
 
         # initalize the trading pairs
-        self.trading_pairs = get_trading_pairs(symbol=symbol, include_leverage=include_leverage)
+        self.trading_pairs = self.get_trading_pairs(symbol=symbol, include_leverage=include_leverage)
         # pass valid kline interval only (check if the parsed str for kline interval is correct or not)
         self.interval = (interval if interval in supported_interval else None)
         # initialize the start and end time
@@ -159,6 +116,48 @@ class BinanceHistoricalKlines:
             logging.info(
                 " Trading pairs: " + "\n  - " + "\n  - ".join(self.trading_pairs)
             )
+
+    def get_trading_pairs(self, symbol: str, include_leverage: bool) -> list[str]:
+
+        """
+            get specific/all trading pairs from binance
+
+            usage:
+            1. get_trading_pairs(symbol=None, include_leverage=False)
+                = get all available trading pairs (excluding leveraged trading pairs) from binance 
+            2. get_trading_pairs(symbol="USDT", include_leverage=False)
+                = get all USDT trading pairs (excluding leveraged trading pairs) from binance
+
+        """
+
+        # extract trading pairs information from binance
+        info = Client().get_all_tickers()
+        # filter the information to get the trading pairs symbols only
+        trading_pairs = list(map(lambda pair: pair["symbol"], info))
+
+        # remove leveraged trading pairs (UP/DOWN) from the trading_pairs
+        if include_leverage is False:
+            to_remove = []
+            # find UP/DOWN trading pairs
+            for i in range(len(trading_pairs)):
+                if ("DOWN" in trading_pairs[i]) is True:
+                    # save the element for the DOWN trading pairs we found
+                    to_remove.append(trading_pairs[i])
+                    # replace the "DOWN" str with "UP" to get the UP trading pairs, and save it
+                    to_remove.append(trading_pairs[i].replace("DOWN", "UP"))
+            # remove down token
+            for element in to_remove:
+                trading_pairs.remove(element)
+
+        # if we want trading pairs for specific symbol (e.g., ETH)
+        if symbol is not None:
+            # play safe; just in case someone forgot to capitalize the whole str
+            symbol = symbol.upper()
+            # create a list with a trading pairs that has the specific symbol only
+            trading_pairs = list(filter(lambda x: x.endswith(symbol), trading_pairs))
+
+        # return the trading pairs
+        return trading_pairs
 
     def time_splitter(self) -> tuple[list[list[int]], list[list[int]]]:
 
