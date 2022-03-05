@@ -1,60 +1,76 @@
-start = 0
-end = 100
+class Demo:
 
-divisor = 7
+    def __init__(self):
 
-concurrent_limit = 10
+        self.concurrent_limit = 10
+        self.divisor = 7
+        self.start = 0
+        self.end = 100
 
-quotient = int(end / divisor)
-remainder = end % divisor
+    def time_splitter(self):
 
-divided_start = []
-divided_end = []
+        """
+        slice the time according to the divisor and group it as chuck 
+        
+        """
 
-if quotient != 0:
+        def divide_chunks(l):
 
-    for i in range(quotient):
+            """
+            divide the splitted time (splitted_start and splitted_end) into a
+            nested list; the concurrent function to fetch the klines will read
+            the nested list and fetch the klines based on the defined start/end
+            time
 
-        if i == 0:
-            divided_start.append(start)
+            """
+            
+            # looping till length l
+            for i in range(0, len(l), self.concurrent_limit): 
+                yield l[i:i + self.concurrent_limit]
+
+        quotient = int(self.end / self.divisor)
+        remainder = self.end % self.divisor
+
+        splitted_start = []
+        splitted_end = []
+
+        if quotient != 0:
+
+            for i in range(quotient):
+
+                if i == 0:
+                    splitted_start.append(self.start)
+                else:
+                    splitted_start.append(self.start + 1)
+
+                self.start += self.divisor
+                splitted_end.append(self.start)
+
+                print(str(splitted_start[i]) + " - " + str(splitted_end[i]))
+
+            if remainder != 0:
+
+                splitted_start.append(self.start + 1)
+
+                self.start += remainder
+                splitted_end.append(self.start)
+
+                print(str(splitted_start[-1]) + " - " + str(splitted_end[-1]))
+
         else:
-            divided_start.append(start + 1)
 
-        start += divisor
-        divided_end.append(start)
+            splitted_start.append(start)
 
-        print(str(divided_start[i]) + " - " + str(divided_end[i]))
+            start += remainder
+            splitted_end.append(start)
+            print(str(splitted_start[0]) + " - " + str(splitted_end[0]))
 
-    if remainder != 0:
+        splitted_start = list(divide_chunks(splitted_start))
+        splitted_end = list(divide_chunks(splitted_end))
 
-        divided_start.append(start + 1)
+        print(splitted_start)
+        print(splitted_end)
 
-        start += remainder
-        divided_end.append(start)
-
-        print(str(divided_start[-1]) + " - " + str(divided_end[-1]))
-
-else:
-
-    divided_start.append(start)
-
-    start += remainder
-    divided_end.append(start)
-    print(str(divided_start[0]) + " - " + str(divided_end[0]))
-
-
-
-
-# source: https://www.geeksforgeeks.org/break-list-chunks-size-n-python/
-def divide_chunks(l, n):
-      
-    # looping till length l
-    for i in range(0, len(l), n): 
-        yield l[i:i + n]
+demo = Demo()
+_ = demo.time_splitter()
   
-# How many elements each
-# list should have
-n = 5
-  
-x = list(divide_chunks(divided_start, n))
-print (x)
