@@ -34,7 +34,7 @@ klines = client.get_historical_klines(
     symbol=SYMBOL,
     interval="1m",
     start_str="2021-1-1 00:00:00",
-    end_str="2021-1-1 00:00:00"
+    end_str="2021-1-1 00:05:00"
 )
 
 with open('1m.csv', 'w', newline='') as f:
