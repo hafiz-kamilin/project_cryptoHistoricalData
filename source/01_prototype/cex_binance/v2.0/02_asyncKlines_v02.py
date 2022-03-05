@@ -96,26 +96,16 @@ class BinanceHistoricalKlines:
             "1w",
             "1M"
         }
-        # specify the column for the klines
-        self.columns = [
-            "open_time",
-            "open",
-            "high",
-            "low",
-            "close",
-            "volume",
-            "close_time",
-            "quote_asset_volume",
-            "number_of_trades",
-            "taker_buy_base_asset_volume",
-            "taker_buy_quote_asset_volume",
-            "ignore"
-        ]
+
         # initialize the active number of concurrent function to fetch the klines
         # NOTE: hard limit for active number of concurrent function to fetch the klines
-        #       is set to 10, and the average weight taken for 10 concurrent 
-        #       fetching function is around 450-950; the max limit allowed by binance is 1200.
+        #       is set to 10, and the average weight taken for 10 concurrent fetching 
+        #       function is around 450-950 for 1m interval;
+        #       the max limit allowed by binance is 1200.
         self.concurrent_limit = 10
+        # calculate how many minutes in approximately 1 month
+        # NOTE: (timestamp for 1 minute) * 60 minutes * 24 hours * 7 days * 4 weeks
+        self.divisor = 60000 * 60 * 24 * 7 * 4
         # initialize dictionary to append the aggregated, unprocessed results
         self.raw_results = {}
 
@@ -207,7 +197,7 @@ class BinanceHistoricalKlines:
                         start="2022-1-1 00:00:00",
                         end="2022-2-1 00:00:00",
                         sequence=str(i)
-                    # adhire the self.concurrent_limit
+                    # the number of running concurrent function follow the self.concurrent_limit
                     ) for i in range(self.concurrent_limit)
                 )
             )
@@ -223,6 +213,23 @@ class BinanceHistoricalKlines:
     #           in here instead
         
     #     """
+
+    # # specify the column for the klines
+    # self.columns = [
+    #     "open_time",
+    #     "open",
+    #     "high",
+    #     "low",
+    #     "close",
+    #     "volume",
+    #     "close_time",
+    #     "quote_asset_volume",
+    #     "number_of_trades",
+    #     "taker_buy_base_asset_volume",
+    #     "taker_buy_quote_asset_volume",
+    #     "ignore"
+    # ]
+
 
     #     for _ in range(len(self.trading_pairs)):
 
