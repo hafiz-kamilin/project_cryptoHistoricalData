@@ -9,10 +9,8 @@ class Demo:
     def __init__(self):
 
         self.concurrent_limit = 10
-        self.divisor = 3600000
-        self.start = "2022-1-1 00:00:00"
-        self.end = "2022-1-2 00:00:00"
-        self.timestamp_in_1m = 1
+        self.start = "2020-1-1 00:00:00"
+        self.end = "2022-1-1 00:00:00"
 
     def time_splitter(self):
 
@@ -42,11 +40,16 @@ class Demo:
         splitted_start = []
         splitted_end = []
 
-        # 1 day     86,400 s  →  86,400 ts  →  86,400,000 binance timestamp
-        # 1 hour    3,600 s   →  3,600 ts   →  3,600,000 binance timestamp
-        # 1 minute  60 s      →  60 ts      →  60,000 binance timestamp
+        # 1 day     86,400 s  →  86,400 timestamp  →  86,400,000 binance's timestamp
+        # 1 hour    3,600 s   →  3,600 timestamp   →  3,600,000 binance's timestamp
+        # 1 minute  60 s      →  60 timestamp      →  60,000 binance's timestamp
 
-        # we only use UTC timezone to match with the binance API timezone
+        timestamp_in_1m = 60
+        # NOTE: (timestamp for 1 minute) * 60 minutes * 24 hours * 7 days * 4 weeks
+        divisor = timestamp_in_1m * 60 * 24 * 7 * 4
+
+
+        # we specifically use UTC timezone to match with the binance API timezone
         tz = pytz.timezone('UTC')
         # convert the date time str to <class 'datetime.datetime'>
         calculated_time = parse(self.start).replace(tzinfo=pytz.UTC)
@@ -56,24 +59,23 @@ class Demo:
         time_duration = int(datetime.timestamp(time_duration) - calculated_time)
 
         # if the time_duration is larger than the divisor
-        if time_duration > self.divisor:
+        if time_duration > divisor:
 
             # find out how many times we can divide the time duration with the divisor and its remainder
-            quotient = int(time_duration / self.divisor)
-            remainder = time_duration % self.divisor
+            quotient = int(time_duration / divisor)
+            remainder = time_duration % divisor
 
             for i in range(quotient):
 
                 # append the newly calculated start time to the splitted_start
-                # NOTE: after converting timestamp to datetime, remove the offset time (+00:00) with slice [:-6]
                 if i == 0:
-                    splitted_start.append(str(datetime.fromtimestamp(calculated_time / 100, tz))[:-6])
+                    splitted_start.append(str(datetime.fromtimestamp(calculated_time, tz))[:-6])
                 else:
-                    splitted_start.append(str(datetime.fromtimestamp((calculated_time + self.timestamp_in_1m) / 100, tz))[:-6])
+                    splitted_start.append(str(datetime.fromtimestamp(calculated_time + timestamp_in_1m, tz))[:-6])
 
                 # append the newly calculated end time to the splitted_end
-                calculated_time += self.divisor
-                splitted_end.append(str(datetime.fromtimestamp(calculated_time / 100, tz))[:-6])
+                calculated_time += divisor
+                splitted_end.append(str(datetime.fromtimestamp(calculated_time, tz))[:-6])
 
                 print(str(splitted_start[-1]) + " - " + str(splitted_end[-1]))
 
@@ -81,11 +83,11 @@ class Demo:
             if remainder != 0:
 
                 # append the newly calculated start time to the splitted_start
-                splitted_start.append(str(datetime.fromtimestamp((calculated_time + self.timestamp_in_1m) / 100, tz))[:-6])
+                splitted_start.append(str(datetime.fromtimestamp(calculated_time + timestamp_in_1m, tz))[:-6])
 
                 # append the newly calculated end time to the splitted_end
                 calculated_time += remainder
-                splitted_end.append(str(datetime.fromtimestamp(calculated_time / 100, tz))[:-6])
+                splitted_end.append(str(datetime.fromtimestamp(calculated_time, tz))[:-6])
 
                 print(str(splitted_start[-1]) + " - " + str(splitted_end[-1]))
 
@@ -93,9 +95,10 @@ class Demo:
         else:
             
             # no calculation needed
-            splitted_start.append(calculated_time)
+            splitted_start.append(self.start)
             splitted_end.append(self.end)
 
+        # create a nested list of `self.concurrent_limit` months
         splitted_start = list(divide_chunks(splitted_start))
         splitted_end = list(divide_chunks(splitted_end))
 
