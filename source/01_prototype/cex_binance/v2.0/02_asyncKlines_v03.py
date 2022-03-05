@@ -12,8 +12,6 @@ __date__ = "4 March 2022"
 
 # use python-binance API to interact with binance
 from binance import Client, AsyncClient
-# to get the current time in timestamp
-from time import time
 # data processing and saving as feather
 import pandas as pd
 # using concurrent programming design
@@ -24,6 +22,11 @@ import logging
 import pickle
 # data saving as csv
 import csv
+
+
+from dateutil.parser import parse
+from datetime import datetime
+import pytz
 
 class BinanceHistoricalKlines:
 
@@ -60,10 +63,6 @@ class BinanceHistoricalKlines:
         #       function is around 450-950 for 1m interval;
         #       the max limit allowed by binance is 1200.
         self.concurrent_limit = 10
-        # calculate how many minutes in approximately 1 month
-        # NOTE: (timestamp for 1 minute) * 60 minutes * 24 hours * 7 days * 4 weeks
-        self.timestamp_in_1m = 60000
-        self.divisor = self.timestamp_in_1m * 60 * 24 * 7 * 4
         # initialize dictionary to append the aggregated, unprocessed results
         self.raw_results = {}
 
@@ -111,7 +110,7 @@ class BinanceHistoricalKlines:
 
         # log the parsed/processed parameters
         if self.logged is True:
-            logging.info(" Timestamp: " + str(time()))
+            logging.info(" Timestamp: " + str(datetime.now()))
             logging.info(output_str)
             logging.info(
                 " Trading pairs: " + "\n  - " + "\n  - ".join(self.trading_pairs)
@@ -159,7 +158,7 @@ class BinanceHistoricalKlines:
         # return the trading pairs
         return trading_pairs
 
-    def time_splitter(self) -> tuple[list[list[int]], list[list[int]]]:
+    def time_splitter(self):
 
         """
         slice the time according to the divisor and group as chuck 
@@ -187,40 +186,52 @@ class BinanceHistoricalKlines:
         splitted_start = []
         splitted_end = []
 
-        time_duration = self.end - self.start
+        # 1 day     86,400 s  →  86,400 timestamp  →  86,400,000 binance's timestamp
+        # 1 hour    3,600 s   →  3,600 timestamp   →  3,600,000 binance's timestamp
+        # 1 minute  60 s      →  60 timestamp      →  60,000 binance's timestamp
+
+        timestamp_in_1m = 60
+        # NOTE: (timestamp for 1 minute) * 60 minutes * 24 hours * 7 days * 4 weeks
+        divisor = timestamp_in_1m * 60 * 24 * 7 * 4
+
+
+        # we specifically use UTC timezone to match with the binance API timezone
+        tz = pytz.timezone('UTC')
+        # convert the date time str to <class 'datetime.datetime'>
+        calculated_time = parse(self.start).replace(tzinfo=pytz.UTC)
+        time_duration = parse(self.end).replace(tzinfo=pytz.UTC)
+        # convert the datetime to timestamp (utc)
+        calculated_time = int(datetime.timestamp(calculated_time))
+        time_duration = int(datetime.timestamp(time_duration) - calculated_time)
 
         # if the time_duration is larger than the divisor
-        if time_duration > self.divisor:
+        if time_duration > divisor:
 
             # find out how many times we can divide the time duration with the divisor and its remainder
-            quotient = int(time_duration / self.divisor)
-            remainder = time_duration % self.divisor
+            quotient = int(time_duration / divisor)
+            remainder = time_duration % divisor
 
             for i in range(quotient):
 
                 # append the newly calculated start time to the splitted_start
                 if i == 0:
-                    splitted_start.append(self.start)
+                    splitted_start.append(str(datetime.fromtimestamp(calculated_time, tz))[:-6])
                 else:
-                    splitted_start.append(self.start + self.timestamp_in_1m)
+                    splitted_start.append(str(datetime.fromtimestamp(calculated_time + timestamp_in_1m, tz))[:-6])
 
                 # append the newly calculated end time to the splitted_end
-                self.start += self.divisor
-                splitted_end.append(self.start)
-
-                print(str(splitted_start[i]) + " - " + str(splitted_end[i]))
+                calculated_time += divisor
+                splitted_end.append(str(datetime.fromtimestamp(calculated_time, tz))[:-6])
 
             # if there is a remainder from the division
             if remainder != 0:
 
                 # append the newly calculated start time to the splitted_start
-                splitted_start.append(self.start + self.timestamp_in_1m)
+                splitted_start.append(str(datetime.fromtimestamp(calculated_time + timestamp_in_1m, tz))[:-6])
 
                 # append the newly calculated end time to the splitted_end
-                self.start += remainder
-                splitted_end.append(self.start)
-
-                print(str(splitted_start[-1]) + " - " + str(splitted_end[-1]))
+                calculated_time += remainder
+                splitted_end.append(str(datetime.fromtimestamp(calculated_time, tz))[:-6])
 
         # if the time_duration is equal or less than the divisor
         else:
@@ -229,6 +240,7 @@ class BinanceHistoricalKlines:
             splitted_start.append(self.start)
             splitted_end.append(self.end)
 
+        # create a nested list of `self.concurrent_limit` months
         splitted_start = list(divide_chunks(splitted_start))
         splitted_end = list(divide_chunks(splitted_end))
 
@@ -261,80 +273,7 @@ class BinanceHistoricalKlines:
 
     async def amain(self) -> None:
 
-        splitted_start, splitted_end = self.time_splitter()
-
-        for pair in self.trading_pairs:
-
-            for i in range(len(splitted_start)):
-
-                for j in range(len(splitted_start[i])):
-
-                    client = await AsyncClient.create()
-
-                    await asyncio.gather(
-                        *(
-                            self.get_historical_klines(
-                                symbol=pair,
-                                start=splitted_start[i][j],
-                                end=splitted_end[i][j],
-                                sequence=sequence
-                            # the number of running concurrent function follow the self.concurrent_limit
-                            ) for sequence in range(self.concurrent_limit)
-                        )
-                    )
-
-                    await client.close_connection()
-
-    # def save_to_file(self, format: str) -> None:
-
-    #     """
-    #     save the downloaded klines from binance as csv/feather/pickle
-    #     NOTE: for the sake of simplicity, we call 
-    #           self.get_historical_klines() function
-    #           in here instead
-        
-    #     """
-
-    # # specify the column for the klines
-    # self.columns = [
-    #     "open_time",
-    #     "open",
-    #     "high",
-    #     "low",
-    #     "close",
-    #     "volume",
-    #     "close_time",
-    #     "quote_asset_volume",
-    #     "number_of_trades",
-    #     "taker_buy_base_asset_volume",
-    #     "taker_buy_quote_asset_volume",
-    #     "ignore"
-    # ]
-
-
-    #     for _ in range(len(self.trading_pairs)):
-
-    #         klines, symbol = self.get_historical_klines()
-
-    #         if (format == "csv"):
-
-    #             # write the column and klines as csv file
-    #             with open(symbol + "_" + self.interval + ".csv", "w", newline="") as f:
-    #                 write = csv.writer(f)
-    #                 write.writerow(self.columns)
-    #                 write.writerows(klines)
-
-    #         elif (format == "pickle"):
-
-    #             with open(symbol + "_" + self.interval + ".pickle", "wb") as handle:
-    #                 pickle.dump(klines, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-    #         elif (format == "feather"):
-
-    #             # convert nested list into a dataframe
-    #             df = pd.DataFrame(data=klines, columns=self.columns)
-    #             # write the dataframe as feather file
-    #             df.to_feather(symbol + "_" + self.interval + ".feather", compression="zstd")
+        pass
 
 if __name__ == "__main__":
 
@@ -349,5 +288,4 @@ if __name__ == "__main__":
     )
 
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(createHistoricalKlines.amain())
-    print("")
+    # loop.run_until_complete(createHistoricalKlines.amain())
