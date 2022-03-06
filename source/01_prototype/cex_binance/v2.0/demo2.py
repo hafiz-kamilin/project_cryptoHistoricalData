@@ -1,3 +1,4 @@
+from concurrent.futures import process
 from dateutil.parser import parse
 from dateutil.tz import gettz
 from datetime import datetime
@@ -23,7 +24,7 @@ class Demo:
         
         """
 
-        def divide_chunks(l):
+        def divide_chunks(l: list):
 
             """
             divide the splitted time (splitted_start and splitted_end) into a
@@ -33,9 +34,13 @@ class Demo:
 
             """
             
+            processed = []
+
             # looping till length l
-            for i in range(0, len(l), self.concurrent_limit): 
-                yield l[i:i + self.concurrent_limit]
+            for i in range(0, len(l), self.concurrent_limit):
+                processed.append(l[i:i + self.concurrent_limit])
+
+            return processed
 
         splitted_start = []
         splitted_end = []
@@ -99,8 +104,8 @@ class Demo:
             splitted_end.append(self.end)
 
         # create a nested list of `self.concurrent_limit` months
-        splitted_start = list(divide_chunks(splitted_start))
-        splitted_end = list(divide_chunks(splitted_end))
+        splitted_start = divide_chunks(splitted_start)
+        splitted_end = divide_chunks(splitted_end)
 
         print(splitted_start)
         print(splitted_end)
