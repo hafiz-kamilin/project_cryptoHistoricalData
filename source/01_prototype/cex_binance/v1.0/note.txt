@@ -1,9 +1,0 @@
-1. Created a synchronous historical klines downloader for Binance CEX.
-2. Feature
-   a) Get all/specific trading pairs
-   b) Download the klines based on the user setting
-   c) Save the klines as csv/pickle/feather
-3. TODO
-   a) Async download
-   b) Aggtrade download
-   c) Fix incomplete data
