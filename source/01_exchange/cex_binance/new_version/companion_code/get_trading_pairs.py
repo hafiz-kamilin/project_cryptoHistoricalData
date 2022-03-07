@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+__author__ = "Mohd Hafizuddin Bin Kamilin"
+__date__ = "7 March 2022"
+
 # use python-binance API to interact with binance
 from binance import Client
 

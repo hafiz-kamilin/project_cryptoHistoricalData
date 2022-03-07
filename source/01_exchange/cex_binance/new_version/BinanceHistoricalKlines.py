@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 __author__ = "Mohd Hafizuddin Bin Kamilin"
-__version__ = "4.0.2"
-__date__ = "4 March 2022"
+__version__ = "4.1.0"
+__date__ = "7 March 2022"
 
 """
     1. Created a synchronous historical klines downloader for Binance CEX.
@@ -216,22 +216,33 @@ class BinanceHistoricalKlines:
 
             # measure the time taken to fetch a single trading pair
             end_time = time() - start_time
-            print("  - Time taken: " + str(end_time) + "s")
+            print("  - Time taken: " + str(end_time) + " s")
             if self.logged is True:
                 logging.info(
-                    " Time taken: " + str(end_time) + "s"
+                    "  - Time taken: " + str(end_time) + " s"
                 )
 
-            # write the fetched klines into the file
-            print(" Writing " + pair + " klines to file...")
-            save_to_file(
-                file_format=self.file_format,
-                pair=pair,
-                start=self.start,
-                end=self.end,
-                interval=self.interval,
-                rearranged_klines=rearranged_klines
-            )
+            if rearranged_klines != []:
+                # write the fetched klines into the file
+                print("  - Writing " + pair + " klines to file...")
+                save_to_file(
+                    file_format=self.file_format,
+                    pair=pair,
+                    start=self.start,
+                    end=self.end,
+                    interval=self.interval,
+                    rearranged_klines=rearranged_klines
+                )
+                if self.logged is True:
+                    logging.info(
+                        "  - Save the fetched klines to file"
+                    )
+            else:
+                print("  - No klines data found...")
+                if self.logged is True:
+                    logging.info(
+                        "  - No klines data to fetch"
+                    )
        
         print("\nCompleted\n")
                 
@@ -240,7 +251,7 @@ if __name__ == "__main__":
     # initialize the BinanceHistoricalKlines class
     createHistoricalKlines = BinanceHistoricalKlines(
         # trading pair
-        symbol="lunaust",
+        symbol="ust",
         # klines interval
         interval="1m",
         # start-end datetime (UTC)

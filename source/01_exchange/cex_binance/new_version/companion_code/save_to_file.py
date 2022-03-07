@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+__author__ = "Mohd Hafizuddin Bin Kamilin"
+__date__ = "7 March 2022"
+
 # converting datetime in str into an object
 from dateutil.parser import parse
 # to get the current datetime
@@ -55,6 +61,8 @@ def save_to_file(file_format: str, pair: str, start: str, end: str, interval: st
 
     elif (file_format == "pickle"):
 
+        # as pickle
+        # NOTE: reinsert the column as the first element in the list
         rearranged_klines.insert(0, columns)
         with open(pair + "_" + interval + "_(" + str(start) + "-" + str(end) + ").pickle", "wb") as handle:
             pickle.dump(rearranged_klines, handle, protocol=pickle.HIGHEST_PROTOCOL)
