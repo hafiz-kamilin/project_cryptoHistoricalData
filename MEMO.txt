@@ -1,11 +1,2 @@
-completed
-1. use feather to save/load the dataset https://arrow.apache.org/docs/python/feather.html 
-
 pending
 1. add Aggtrade to the dataset
-2. find a way to convert timestamp into a human readable date https://www.programiz.com/python-programming/datetime/timestamp-datetime
-4. add stop/resume feature https://stackoverflow.com/questions/68693561/how-to-detect-binancesocketmanager-websocket-disconnect-in-python
-
-dropped
-1. use async to get data from binance https://stackoverflow.com/a/48486557
-   = the weight is too heavy to get two klines at the same time if the time range exceed few weeks
