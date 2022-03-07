@@ -115,7 +115,7 @@ class BinanceHistoricalKlines:
         #       the max limit allowed by binance is 1200.
         self.concurrent_limit = 10
         # initialize dictionary to append the aggregated, unprocessed results
-        self.raw_results = {}
+        self.aggregated_result = {}
 
         # initalize the trading pairs
         self.trading_pairs = get_trading_pairs(symbol=symbol, include_leverage=include_leverage)
@@ -172,7 +172,7 @@ class BinanceHistoricalKlines:
     async def get_historical_klines(self, symbol: str, start: str, end: str, sequence: int) -> None:
 
         """
-            fetch the historical klines from binance and save it into a dictionary (self.raw_results)
+            fetch the historical klines from binance and save it into a dictionary (self.aggregated_result)
             NOTE: the data on the dictionary need to be joined and cleaned up!
         
         """
@@ -194,7 +194,7 @@ class BinanceHistoricalKlines:
         print("  - Current requests weight: " + request_weight)
 
         # save the fetched klines into the dictionary
-        self.raw_results[sequence] = klines
+        self.aggregated_result[sequence] = klines
 
     async def amain(self) -> None:
 
@@ -291,7 +291,7 @@ class BinanceHistoricalKlines:
 
             return splitted_start, splitted_end
 
-        def save_to_file(file_format: str, pair: str, start: str, end: str, interval: str, raw_results: dict) -> None:
+        def save_to_file(file_format: str, pair: str, start: str, end: str, interval: str, rearranged_klines: list) -> None:
 
             """
             save the downloaded klines from binance as csv/pickle/feather
@@ -301,13 +301,6 @@ class BinanceHistoricalKlines:
                   option was added if feather is not usable on the host computer.
             
             """
-
-            # rearrange the dictionary into a list
-            # NOTE: arrange in ascending order based on the raw_results's key
-            rearranged_list = []
-            for i in range(len(raw_results)):
-                for j in range(len(raw_results[i])):
-                    rearranged_list.append(raw_results[i][j])
 
             # specify the column for the klines
             columns = [
@@ -338,18 +331,18 @@ class BinanceHistoricalKlines:
                 with open(pair + "_" + interval + "_(" + str(start) + "-" + str(end) + ").csv", "w", newline="") as f:
                     write = csv.writer(f)
                     write.writerow(columns)
-                    write.writerows(rearranged_list)
+                    write.writerows(rearranged_klines)
 
             elif (file_format == "pickle"):
 
-                rearranged_list.insert(0, columns)
+                rearranged_klines.insert(0, columns)
                 with open(pair + "_" + interval + "_(" + str(start) + "-" + str(end) + ").pickle", "wb") as handle:
-                    pickle.dump(rearranged_list, handle, protocol=pickle.HIGHEST_PROTOCOL)
+                    pickle.dump(rearranged_klines, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
             elif (file_format == "feather"):
 
                 # convert nested list into a dataframe
-                df = pd.DataFrame(data=rearranged_list, columns=columns)
+                df = pd.DataFrame(data=rearranged_klines, columns=columns)
                 # write the dataframe as feather file
                 df.to_feather(pair + "_" + interval + "_(" + str(start) + "-" + str(end) + ").feather", compression="zstd")
 
@@ -370,6 +363,9 @@ class BinanceHistoricalKlines:
                     "  - Trading pair: " + pair
                 )
             print("\n Retrieving klines for " + pair)
+            
+            # store the fetched klines
+            rearranged_klines = []
 
             # for each chunk of time duration
             for i in range(len(splitted_start)):
@@ -381,14 +377,22 @@ class BinanceHistoricalKlines:
                             symbol=pair,
                             start=splitted_start[i][j],
                             end=splitted_end[i][j],
-                            # use sequence as a dictionary key to store the klines
-                            sequence=(i * 1 + j)
+                            # use sequence as a dictionary key to know how to arrange the klines
+                            sequence=j
                         # adhire the self.concurrent_limit
                         ) for j in range(len(splitted_end[i]))
                     )
                 )
 
                 await client.close_connection()
+
+                # rearrange the dictionary into a list
+                # NOTE: arrange in ascending order based on the aggregated_result's key
+                for i in range(len(self.aggregated_result)):
+                    for j in range(len(self.aggregated_result[i])):
+                        rearranged_klines.append(self.aggregated_result[i][j])
+
+                self.aggregated_result = {}
 
             # write the fetched klines into the file
             print("    = Writing " + pair + " klines to file...")
@@ -398,11 +402,9 @@ class BinanceHistoricalKlines:
                 start=self.start,
                 end=self.end,
                 interval=self.interval,
-                raw_results=self.raw_results
+                rearranged_klines=rearranged_klines
             )
-            
-            self.raw_results = {}
-        
+       
         print("\n★ Completed\n")
                 
 if __name__ == "__main__":
