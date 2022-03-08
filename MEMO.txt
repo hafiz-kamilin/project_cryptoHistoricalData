@@ -1,2 +1,6 @@
 pending
+
+1. Latent bottleneck found on v4.1.0 where the speed is really slow when fetching 1 month klines for multiple trading pair.
+   The issue is caused by the program not fetching up to 10 concurrent klines (10 months worth of data) as 1 month is the smallest denominator for time interval.
+   Proposal: Maintain the 10 concurrent fetch, but divide any time interval less than 1 month up to 10 segment.
 1. add Aggtrade to the dataset
