@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = "Mohd Hafizuddin Bin Kamilin"
-__version__ = "4.1.0"
+__version__ = "4.1.1"
 __date__ = "7 March 2022"
 
 """
@@ -16,7 +16,8 @@ __date__ = "7 March 2022"
        f) Logging capability to improve debugging
        g) Add time measurement to know how long it take to fetch one trading pair
     3. TODO
-       a) Aggtrade download
+       a) Ensure that 10 concurrent fetching process is always running
+       b) Aggtrade download
 
 """
 
@@ -251,12 +252,12 @@ if __name__ == "__main__":
     # initialize the BinanceHistoricalKlines class
     createHistoricalKlines = BinanceHistoricalKlines(
         # trading pair
-        symbol="ust",
+        symbol="USDT",
         # klines interval
         interval="1m",
         # start-end datetime (UTC)
         start="2022-1-1 00:00:00",
-        end="2022-3-1 00:00:00",
+        end="2022-2-1 00:00:00",
         # include/exclude leveraged trading pair
         include_leverage = False,
         # we can choose either "csv", "pickle" or "feather" to save the klines
