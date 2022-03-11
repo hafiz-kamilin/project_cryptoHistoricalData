@@ -69,7 +69,7 @@ class BinanceHistoricalKlines:
         # initialize the active number of concurrent function to fetch the klines
         # NOTE: hard limit for active number of concurrent function to fetch the klines
         #       is set to 10, and the average weight taken for 10 concurrent fetching 
-        #       function is around 450-950 for 1m interval;
+        #       function is around 450-950 for 1 month, 1 minute interval;
         #       the max limit allowed by binance is 1200.
         self.concurrent_limit = 10
         # initialize dictionary to append the aggregated, unprocessed results
