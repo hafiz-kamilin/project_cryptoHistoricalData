@@ -11,7 +11,7 @@ from datetime import datetime
 # timezone manipulation
 import pytz
 
-def time_splitter(concurrent_limit: int, start: str, end: str) -> tuple[list[list[str]], list[list[str]]]:
+def time_splitter(start: str, end: str) -> tuple[list[list[str]], list[list[str]]]:
 
     """
     slice the time according to the divisor and group as chuck 
@@ -23,7 +23,7 @@ def time_splitter(concurrent_limit: int, start: str, end: str) -> tuple[list[lis
     
     """
 
-    def divide_chunks(l: list) -> list[list[str]]:
+    def list_segmenter(concurrent_limit: int, l: list) -> list[list[str]]:
 
         """
         divide the splitted time (splitted_start and splitted_end) into a
@@ -42,16 +42,21 @@ def time_splitter(concurrent_limit: int, start: str, end: str) -> tuple[list[lis
 
         return processed
 
+    # to record the splitted time
     splitted_start = []
     splitted_end = []
+    # initialize the time limit
+    concurrent_limit = 0
 
     # 1 day     86,400 s  →  86,400 timestamp  →  86,400,000 binance's timestamp
     # 1 hour    3,600 s   →  3,600 timestamp   →  3,600,000 binance's timestamp
     # 1 minute  60 s      →  60 timestamp      →  60,000 binance's timestamp
 
     timestamp_in_1m = 60
-    # NOTE: (timestamp for 1 minute) * 60 minutes * 24 hours * 7 days * 4 weeks * concurrent_limit
-    divisor = timestamp_in_1m * 60 * 24 * 7 * 4 * concurrent_limit
+    # NOTE: (timestamp for 1 minute) * 60 minutes * 24 hours * 7 days * 4 weeks * 10 months
+    #       based on the previous finding, we can only fetch 1 month worth of data via 10 concurrent running fetch function.
+    #       thus, we will only fetch max 10 months of data with 10~20 maximum of concurrent running fetch function
+    divisor = timestamp_in_1m * 60 * 24 * 7 * 4 * 10
 
     # we specifically use UTC timezone to match with the binance API timezone
     tz = pytz.timezone("UTC")
@@ -100,7 +105,7 @@ def time_splitter(concurrent_limit: int, start: str, end: str) -> tuple[list[lis
         splitted_end.append(end)
 
     # create a nested list of `self.concurrent_limit` months
-    splitted_start = divide_chunks(splitted_start)
-    splitted_end = divide_chunks(splitted_end)
+    splitted_start = list_segmenter(concurrent_limit, splitted_start)
+    splitted_end = list_segmenter(concurrent_limit, splitted_end)
 
     return splitted_start, splitted_end
