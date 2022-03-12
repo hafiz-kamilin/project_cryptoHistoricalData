@@ -67,9 +67,11 @@ def time_splitter(start: str, end: str) -> tuple[list[list[str]], list[list[str]
     start_time = int(datetime.timestamp(start_time))
     time_duration = int(datetime.timestamp(time_duration) - start_time)
 
-    # if the time_duration is larger than the divisor
+    # if the time_duration is more than 10 months
     if time_duration > divisor:
 
+        # set 20 concurrent running fetch function
+        concurrent_limit = 20
         # find out how many times we can divide the time duration with the divisor and its remainder
         quotient = int(time_duration / divisor)
         remainder = time_duration % divisor
