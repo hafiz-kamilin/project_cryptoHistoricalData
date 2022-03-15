@@ -16,7 +16,8 @@ __date__ = "7 March 2022"
        f) Logging capability to improve debugging
        g) Add time measurement to know how long it take to fetch one trading pair
     3. TODO
-       a) Ensure that 10 concurrent fetching process is always running
+       a) Ensure that 10 concurrent fetching process is always running (resolved)
+       b) Adaptive number of concurrent_limit; as fetching 10 klines for a shorter duration doesn't speed up
        b) Aggtrade download
 
 """
@@ -34,7 +35,7 @@ from time import time
 
 # custom libraries
 from companion_code.get_trading_pairs import get_trading_pairs
-from companion_code.time_splitterV2 import time_splitter
+from companion_code.time_splitter import time_splitter
 from companion_code.save_to_file import save_to_file
 
 class BinanceHistoricalKlines:
@@ -181,9 +182,6 @@ class BinanceHistoricalKlines:
         # initialize async client
         client = await AsyncClient.create()
 
-        print(splitted_start)
-        print(splitted_end)
-
         # get the klines for each of the trading pairs, one by one
         for pair in self.trading_pairs:
 
@@ -267,7 +265,7 @@ if __name__ == "__main__":
         interval="1m",
         # start-end datetime (UTC)
         start="2022-1-1 00:00:00",
-        end="2022-2-1 00:00:00",
+        end="2022-1-2 00:00:00",
         # include/exclude leveraged trading pair
         include_leverage = False,
         # we can choose either "csv", "pickle" or "feather" to save the klines
