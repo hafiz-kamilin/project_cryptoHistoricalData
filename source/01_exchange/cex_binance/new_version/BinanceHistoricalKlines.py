@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = "Mohd Hafizuddin Bin Kamilin"
-__version__ = "4.1.1"
+__version__ = "4.1.2"
 __date__ = "7 March 2022"
 
 """
@@ -265,7 +265,7 @@ if __name__ == "__main__":
         interval="1m",
         # start-end datetime (UTC)
         start="2022-1-1 00:00:00",
-        end="2022-1-2 00:00:00",
+        end="2022-3-1 00:00:00",
         # include/exclude leveraged trading pair
         include_leverage = False,
         # we can choose either "csv", "pickle" or "feather" to save the klines
