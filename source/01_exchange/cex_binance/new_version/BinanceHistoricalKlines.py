@@ -34,7 +34,7 @@ from time import time
 
 # custom libraries
 from companion_code.get_trading_pairs import get_trading_pairs
-from companion_code.time_splitter import time_splitter
+from companion_code.time_splitterV2 import time_splitter
 from companion_code.save_to_file import save_to_file
 
 class BinanceHistoricalKlines:
@@ -66,12 +66,18 @@ class BinanceHistoricalKlines:
             "1M"
         }
 
-        # initialize the active number of concurrent function to fetch the klines
-        # NOTE: hard limit for active number of concurrent function to fetch the klines
-        #       is set to 10, and the average weight taken for 10 concurrent fetching 
-        #       function is around 450-950 for 1 month, 1 minute interval;
-        #       the max limit allowed by binance is 1200.
+        # 1 day     86,400 s  →  86,400 timestamp  →  86,400,000 binance's timestamp
+        # 1 hour    3,600 s   →  3,600 timestamp   →  3,600,000 binance's timestamp
+        # 1 minute  60 s      →  60 timestamp      →  60,000 binance's timestamp
+
+        timestamp_in_1m = 60
+        # NOTE: (timestamp for 1 minute) * 60 minutes * 24 hours * 7 days * 4 weeks * 10 months
+        #       based on the previous finding, we can only fetch 1 month worth of data via 10 concurrent running fetch function.
+        #       thus, we will only fetch max 10 months of data with 10~20 maximum of concurrent running fetch function
+        self.duration_limit = timestamp_in_1m * 60 * 24 * 7 * 4 * 10
+        # set how many concurrent fetching function to run
         self.concurrent_limit = 10
+
         # initialize dictionary to append the aggregated, unprocessed results
         self.aggregated_result = {}
 
@@ -167,12 +173,16 @@ class BinanceHistoricalKlines:
 
         # get the splitted time duration to fetch the klines
         splitted_start, splitted_end = time_splitter(
-            concurrent_limit=self.concurrent_limit,
             start=self.start,
-            end=self.end
+            end=self.end,
+            duration_limit=self.duration_limit,
+            concurrent_limit=self.concurrent_limit
         )
         # initialize async client
         client = await AsyncClient.create()
+
+        print(splitted_start)
+        print(splitted_end)
 
         # get the klines for each of the trading pairs, one by one
         for pair in self.trading_pairs:
@@ -191,7 +201,7 @@ class BinanceHistoricalKlines:
             # for each chunk of time duration
             for i in range(len(splitted_start)):
 
-                # gather ≦10 concurrent functions to fetch the klines
+                # gather concurrent function to fetch the klines
                 await asyncio.gather(
                     *(
                         self.get_historical_klines(
@@ -252,7 +262,7 @@ if __name__ == "__main__":
     # initialize the BinanceHistoricalKlines class
     createHistoricalKlines = BinanceHistoricalKlines(
         # trading pair
-        symbol="USDT",
+        symbol="BNBUSDT",
         # klines interval
         interval="1m",
         # start-end datetime (UTC)
