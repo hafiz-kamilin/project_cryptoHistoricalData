@@ -84,6 +84,10 @@ def time_splitter(start: str, end: str, duration_limit: int, concurrent_limit: i
             start_time += remainder
             splitted_end.append(str(datetime.fromtimestamp(start_time, tz))[:-6])
 
+        # create a nested list of `self.concurrent_limit` months
+        splitted_start = list_segmenter(concurrent_limit, splitted_start)
+        splitted_end = list_segmenter(concurrent_limit, splitted_end)
+
     # if the time_duration is equal or less than the duration_limit
     else:
 
@@ -115,8 +119,8 @@ def time_splitter(start: str, end: str, duration_limit: int, concurrent_limit: i
             start_time += remainder
             splitted_end.append(str(datetime.fromtimestamp(start_time, tz))[:-6])
 
-    # create a nested list of `self.concurrent_limit` months
-    splitted_start = list_segmenter(concurrent_limit, splitted_start)
-    splitted_end = list_segmenter(concurrent_limit, splitted_end)
+        # create a nested list
+        splitted_start = [splitted_start]
+        splitted_end = [splitted_end]
 
     return splitted_start, splitted_end
