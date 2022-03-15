@@ -14,7 +14,7 @@ columns = [
 ]
 
 time_start = time()
-klines = client.get_historical_klines("BNBUSDT", '1m', "2022-1-1 00:00:00", "2022-1-2 00:00:00")
+klines = client.get_historical_klines("BNBUSDT", '1m', "2022-1-1 00:00:00", "2022-3-1 00:00:00")
 print("  - Time taken: " + str(time() - time_start) + " s")
 with open('1m.csv', 'w', newline='') as f:
     write = csv.writer(f)
