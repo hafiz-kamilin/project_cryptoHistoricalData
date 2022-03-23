@@ -17,7 +17,7 @@ __date__ = "7 March 2022"
        g) Add time measurement to know how long it take to fetch one trading pair
     3. TODO
        a) Ensure that 10 concurrent fetching process is always running (resolved)
-       b) Adaptive number of concurrent_limit; as fetching 10 klines for a shorter duration doesn't speed up
+       b) Adaptive number of concurrent_limit; as fetching 10 klines for a shorter duration doesn't speed up (somehow)
        b) Aggtrade download
 
 """
