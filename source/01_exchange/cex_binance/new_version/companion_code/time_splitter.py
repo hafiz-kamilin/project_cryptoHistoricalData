@@ -11,7 +11,7 @@ from datetime import datetime
 # timezone manipulation
 import pytz
 
-def time_splitter(start: str, end: str, duration_limit: int, concurrent_limit: int) -> tuple[list[list[str]], list[list[str]]]:
+def time_splitter(start: str, end: str, interval_value: int, duration_limit: int, concurrent_limit: int) -> tuple[list[list[str]], list[list[str]]]:
 
     """
     slice the time according to the duration_limit and group as chuck 
@@ -54,8 +54,8 @@ def time_splitter(start: str, end: str, duration_limit: int, concurrent_limit: i
     start_time = int(datetime.timestamp(start_time))
     time_duration = int(datetime.timestamp(time_duration) - start_time)
 
-    # if the time_duration is more than duration_limit
-    if time_duration > duration_limit:
+    # if the time_duration is more than duration_limit and more than the (interval_value * concurrent_limit)
+    if (time_duration > duration_limit) and (time_duration > interval_value * concurrent_limit):
 
         # find out how many times we can divide the time_duration with the duration_limit and its remainder
         quotient = int(time_duration / duration_limit)
@@ -88,8 +88,8 @@ def time_splitter(start: str, end: str, duration_limit: int, concurrent_limit: i
         splitted_start = list_segmenter(concurrent_limit, splitted_start)
         splitted_end = list_segmenter(concurrent_limit, splitted_end)
 
-    # if the time_duration is equal or less than the duration_limit
-    else:
+    # else if the time_duration is more more than the (interval_value * concurrent_limit)
+    elif (time_duration > interval_value * concurrent_limit):
 
         # find out how many times we can divide the time_duration with the concurrent_limit and its remainder
         remainder = time_duration % concurrent_limit
@@ -122,5 +122,11 @@ def time_splitter(start: str, end: str, duration_limit: int, concurrent_limit: i
         # create a nested list
         splitted_start = [splitted_start]
         splitted_end = [splitted_end]
+
+    else:
+        
+        # no calculation needed
+        splitted_start = [[start]]
+        splitted_end = [[end]]
 
     return splitted_start, splitted_end
