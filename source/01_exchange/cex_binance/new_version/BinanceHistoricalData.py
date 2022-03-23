@@ -66,6 +66,22 @@ class BinanceHistoricalKlines:
             "1w",
             "1M"
         }
+        self.converted_interval = {
+            "1m": 1 * 60,
+            "3m": 3 * 60,
+            "5m": 5 * 60,
+            "30m": 30 * 60,
+            "1h": 60 * 60,
+            "2h": 2 * 60 * 60,
+            "4h": 4 * 60 * 60,
+            "6h": 6 * 60 * 60,
+            "8h": 8 * 60 * 60,
+            "12h": 12 * 60 * 60,
+            "1d": 24 * 60 * 60,
+            "3d": 3 * 24 * 60 * 60,
+            "1w": 7 * 24 * 60 * 60,
+            "1M": 4 * 7 * 24 * 60 * 60
+        }
 
         # 1 day     86,400 s  →  86,400 timestamp  →  86,400,000 binance's timestamp
         # 1 hour    3,600 s   →  3,600 timestamp   →  3,600,000 binance's timestamp
@@ -176,6 +192,7 @@ class BinanceHistoricalKlines:
         splitted_start, splitted_end = time_splitter(
             start=self.start,
             end=self.end,
+            interval_value = self.converted_interval[self.interval],
             duration_limit=self.duration_limit,
             concurrent_limit=self.concurrent_limit
         )
@@ -208,7 +225,6 @@ class BinanceHistoricalKlines:
                             end=splitted_end[i][j],
                             # use sequence as a dictionary key to know how to arrange the klines
                             sequence=j
-                        # adhire the self.concurrent_limit
                         ) for j in range(len(splitted_end[i]))
                     )
                 )
@@ -262,10 +278,10 @@ if __name__ == "__main__":
         # trading pair
         symbol="BNBUSDT",
         # klines interval
-        interval="1m",
+        interval="5m",
         # start-end datetime (UTC)
         start="2021-1-1 00:00:00",
-        end="2022-1-1 00:00:00",
+        end="2021-1-1 00:05:00",
         # include/exclude leveraged trading pair
         include_leverage = False,
         # we can choose either "csv", "pickle" or "feather" to save the klines
