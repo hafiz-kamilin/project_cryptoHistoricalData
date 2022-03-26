@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 __author__ = "Mohd Hafizuddin Bin Kamilin"
-__version__ = "5.0.0"
-__date__ = "7 March 2022"
+__version__ = "5.2.0"
+__date__ = "26 March 2022"
 
 # to interact with binance-api via concurrent klines fetch
 import asyncio
@@ -18,10 +18,10 @@ if __name__ == "__main__":
         # trading pair
         symbol="BNBUSDT",
         # klines interval
-        interval="5m",
+        interval="1m",
         # start-end datetime (UTC)
-        start="2021-1-1 00:00:00",
-        end="2021-1-1 00:05:00",
+        start="2020-1-1 00:00:00",
+        end="2022-1-1 00:00:00",
         # include/exclude leveraged trading pair
         include_leverage = False,
         # we can choose either "csv", "pickle" or "feather" to save the klines
