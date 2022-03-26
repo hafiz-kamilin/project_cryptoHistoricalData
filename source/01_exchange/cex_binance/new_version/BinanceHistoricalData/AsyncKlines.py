@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 __author__ = "Mohd Hafizuddin Bin Kamilin"
-__version__ = "4.1.3"
-__date__ = "7 March 2022"
+__version__ = "5.2.0"
+__date__ = "26 March 2022"
 
 # use python-binance API to interact with binance
 from binance import Client, AsyncClient
@@ -14,12 +14,12 @@ import asyncio
 # for logging and debuging purpose
 import logging
 # measure the time taken to fetch the klines
-from time import time
+import time
 
 # custom libraries
-from BinanceHistoricalData.utility_modules.get_trading_pairs import get_trading_pairs
-from BinanceHistoricalData.utility_modules.time_splitter import time_splitter
-from BinanceHistoricalData.utility_modules.save_to_file import save_to_file
+from BinanceHistoricalData.companion_code.get_trading_pairs import get_trading_pairs
+from BinanceHistoricalData.companion_code.time_splitter import time_splitter
+from BinanceHistoricalData.companion_code.save_to_file import save_to_file
 
 class AsyncKlines:
 
@@ -172,7 +172,7 @@ class AsyncKlines:
     async def amain(self) -> None:
 
         # get the splitted time duration to fetch the klines
-        splitted_start, splitted_end = time_splitter(
+        splitted_start, splitted_end, delay = time_splitter(
             start=self.start,
             end=self.end,
             interval_value = self.converted_interval[self.interval],
@@ -194,10 +194,13 @@ class AsyncKlines:
             # store the fetched klines
             rearranged_klines = []
             # record the initial time
-            start_time = time()
+            start_time = time.time()
+
+            # get the number of segment
+            segment = len(splitted_start)
 
             # for each chunk of time duration
-            for i in range(len(splitted_start)):
+            for i in range(segment):
 
                 # gather concurrent function to fetch the klines
                 await asyncio.gather(
@@ -216,14 +219,23 @@ class AsyncKlines:
 
                 # rearrange the dictionary into a list
                 # NOTE: arrange in ascending order based on the aggregated_result's key
-                for i in range(len(self.aggregated_result)):
-                    for j in range(len(self.aggregated_result[i])):
-                        rearranged_klines.append(self.aggregated_result[i][j])
+                for k in range(len(self.aggregated_result)):
+                    for l in range(len(self.aggregated_result[k])):
+                        rearranged_klines.append(self.aggregated_result[k][l])
 
                 self.aggregated_result = {}
 
+                # if the timerange is really huge, add 10 s delay before fetching again to prevent exceeding the weight limit
+                if (delay is True) and (i < segment - 1):
+                    time.sleep(10)
+                    print("  - Wait: 10 s")
+                    if self.logged is True:
+                        logging.info(
+                            "  - Wait: 10 s"
+                        )
+
             # measure the time taken to fetch a single trading pair
-            end_time = time() - start_time
+            end_time = time.time() - start_time
             print("  - Time taken: " + str(end_time) + " s")
             if self.logged is True:
                 logging.info(
