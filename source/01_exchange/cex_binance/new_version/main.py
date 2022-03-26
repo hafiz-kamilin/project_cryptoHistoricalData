@@ -2,11 +2,16 @@
 # -*- coding: utf-8 -*-
 
 __author__ = "Mohd Hafizuddin Bin Kamilin"
-__version__ = "5.2.0"
+__version__ = "5.2.1"
 __date__ = "26 March 2022"
 
-# to interact with binance-api via concurrent klines fetch
-import asyncio
+"""
+TODO
+
+1. Add try-except to restart if the download failed
+2. Add Aggtrade
+
+"""
 
 # custom libraries
 from BinanceHistoricalData.AsyncKlines import AsyncKlines
@@ -23,12 +28,9 @@ if __name__ == "__main__":
         start="2020-1-1 00:00:00",
         end="2022-1-1 00:00:00",
         # include/exclude leveraged trading pair
-        include_leverage = False,
+        include_leverage=False,
         # we can choose either "csv", "pickle" or "feather" to save the klines
-        file_format = "csv",
+        file_format="csv",
         # option to enable/disable logging
         logged=True
     )
-
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(createHistoricalKlines.amain())
