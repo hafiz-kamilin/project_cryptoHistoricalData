@@ -9,7 +9,8 @@ __date__ = "26 March 2022"
 TODO
 
 1. Add try-except to restart if the download failed
-2. Add Aggtrade
+2. Change list to numpy array to save memory
+3. Add Aggtrade
 
 """
 
@@ -30,7 +31,5 @@ if __name__ == "__main__":
         # include/exclude leveraged trading pair
         include_leverage=False,
         # we can choose either "csv", "pickle" or "feather" to save the klines
-        file_format="csv",
-        # option to enable/disable logging
-        logged=True
+        file_format="csv"
     )
