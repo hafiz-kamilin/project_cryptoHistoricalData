@@ -23,7 +23,7 @@ from BinanceHistoricalData.companion_code.save_to_file import save_to_file
 
 class AsyncKlines:
 
-    def __init__(self, symbol: str, interval: str, start: str, end: None, include_leverage: bool, file_format: str, logged: bool) -> None:
+    def __init__(self, symbol: str, interval: str, start: str, end: None, include_leverage: bool, file_format: str) -> None:
 
         fetch_klines = self.FetchKlines(
             # trading pair
@@ -36,9 +36,7 @@ class AsyncKlines:
             # include/exclude leveraged trading pair
             include_leverage=include_leverage,
             # we can choose either "csv", "pickle" or "feather" to save the klines
-            file_format=file_format,
-            # option to enable/disable logging
-            logged=logged
+            file_format=file_format
         )
 
         loop = asyncio.get_event_loop()
@@ -46,7 +44,7 @@ class AsyncKlines:
 
     class FetchKlines:
 
-        def __init__(self, symbol: str, interval: str, start: str, end: None, include_leverage: bool, file_format: str, logged: bool) -> None:
+        def __init__(self, symbol: str, interval: str, start: str, end: None, include_leverage: bool, file_format: str) -> None:
 
             """
                 1. initialize the parameters to get the klines,
@@ -114,20 +112,18 @@ class AsyncKlines:
             # initialize the file format chosen to save the klines
             self.file_format = file_format
 
-            # initialize log
-            self.logged = logged
-            if self.logged is True:
-                logging.basicConfig(
-                    filename="record_historicalKlines.log",
-                    filemode = "w+",
-                    encoding="utf-8",
-                    level=logging.DEBUG,
-                    format="%(levelname)s \n%(message)s"
-                )
-                # disable logging for the imported library; we want to focus only on the main program
-                list_of_logger_to_ignore = list(logging.Logger.manager.loggerDict.keys())
-                for logger in list_of_logger_to_ignore:
-                    logging.getLogger(logger).disabled = True
+            # initialize logging
+            logging.basicConfig(
+                filename="record_historicalKlines.log",
+                filemode = "w+",
+                encoding="utf-8",
+                level=logging.DEBUG,
+                format="%(levelname)s \n%(message)s"
+            )
+            # disable logging for the imported library; we want to focus only on the main program
+            list_of_logger_to_ignore = list(logging.Logger.manager.loggerDict.keys())
+            for logger in list_of_logger_to_ignore:
+                logging.getLogger(logger).disabled = True
 
             # sanity tests
             if (self.trading_pairs == []) and (self.interval is None):
@@ -151,12 +147,11 @@ class AsyncKlines:
             print(output_str)
 
             # log the parsed/processed parameters
-            if self.logged is True:
-                logging.info(" Timestamp: " + str(datetime.now()))
-                logging.info(output_str)
-                logging.info(
-                    " Trading pairs: " + "\n  - " + "\n  - ".join(self.trading_pairs)
-                )
+            logging.info(" Timestamp: " + str(datetime.now()))
+            logging.info(output_str)
+            logging.info(
+                " Trading pairs: " + "\n  - " + "\n  - ".join(self.trading_pairs)
+            )
 
         async def get_historical_klines(self, symbol: str, start: str, end: str, sequence: int) -> None:
 
@@ -176,18 +171,17 @@ class AsyncKlines:
 
             # log the current total request weight consumed
             request_weight = Client().response.headers["x-mbx-used-weight"]
-            if self.logged is True:
-                # binance's max total request weight is 1200
-                if int(request_weight) <= 1200:
-                    logging.debug(
-                        "  - Estimated request weight consumed: " + request_weight
-                    )
-                    print("  - Current requests weight: " + request_weight)
-                else:
-                    logging.warning(
-                        "  - Exceeded 1200 request weight limit: " + request_weight
-                    )
-                    print("  - Exceeded requests weight: " + request_weight)
+            # binance's max total request weight is 1200
+            if int(request_weight) <= 1200:
+                logging.debug(
+                    "  - Estimated request weight consumed: " + request_weight
+                )
+                print("  - Current requests weight: " + request_weight)
+            else:
+                logging.warning(
+                    "  - Exceeded 1200 request weight limit: " + request_weight
+                )
+                print("  - Exceeded requests weight: " + request_weight)
             
             # save the fetched klines into the dictionary
             self.aggregated_result[sequence] = klines
@@ -208,10 +202,9 @@ class AsyncKlines:
             # get the klines for each of the trading pairs, one by one
             for pair in self.trading_pairs:
 
-                if self.logged is True:
-                    logging.debug(
-                        "  - Trading pair: " + pair
-                    )
+                logging.debug(
+                    "  - Trading pair: " + pair
+                )
                 print("\n Retrieving klines for " + pair)
                 
                 # store the fetched klines
@@ -227,10 +220,9 @@ class AsyncKlines:
 
                     print_log = "  - Fetch segment " + str(i + 1) + " (" + str(segment) + ") with " + str(len(splitted_start[i])) + " concurrent"
                     print(print_log)
-                    if self.logged is True:
-                        logging.info(
-                            print_log
-                        )
+                    logging.info(
+                        print_log
+                    )
 
                     # gather concurrent function to fetch the klines
                     await asyncio.gather(
@@ -259,19 +251,17 @@ class AsyncKlines:
                     if (delay is True) and (i < segment - 1):
                         time.sleep(10)
                         print("  - Wait: 10 s")
-                        if self.logged is True:
-                            logging.info(
-                                "  - Wait: 10 s"
-                            )
+                        logging.info(
+                            "  - Wait: 10 s"
+                        )
 
                 # measure the time taken to fetch a single trading pair
                 end_time = time.time() - start_time
                 print_log = "  - Time taken: " + str(end_time) + " s"
                 print(print_log)
-                if self.logged is True:
-                    logging.info(
-                        print_log
-                    )
+                logging.info(
+                    print_log
+                )
 
                 if rearranged_klines != []:
                     # write the fetched klines into the file
@@ -284,15 +274,13 @@ class AsyncKlines:
                         interval=self.interval,
                         rearranged_klines=rearranged_klines
                     )
-                    if self.logged is True:
-                        logging.info(
-                            "  - Save the fetched klines to file"
-                        )
+                    logging.info(
+                        "  - Save the fetched klines to file"
+                    )
                 else:
                     print("  - No klines data found...")
-                    if self.logged is True:
-                        logging.info(
-                            "  - No klines data to fetch"
-                        )
+                    logging.info(
+                        "  - No klines data to fetch"
+                    )
         
             print("\nCompleted\n")
