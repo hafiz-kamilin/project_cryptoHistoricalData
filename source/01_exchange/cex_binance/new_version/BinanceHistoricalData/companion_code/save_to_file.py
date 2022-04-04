@@ -16,6 +16,8 @@ import pickle
 import pytz
 # data saving as csv
 import csv
+# to handle folder checking and creation
+import os
 
 def save_to_file(file_format: str, pair: str, start: str, end: str, interval: str, rearranged_klines: list) -> None:
 
@@ -27,6 +29,10 @@ def save_to_file(file_format: str, pair: str, start: str, end: str, interval: st
             option was added if feather is not usable on the host computer.
     
     """
+
+    if (os.path.isfile("Downloaded Historical Data") is not True):
+
+        os.mkdir("Downloaded Historical Data")
 
     # specify the column for the klines
     columns = [
