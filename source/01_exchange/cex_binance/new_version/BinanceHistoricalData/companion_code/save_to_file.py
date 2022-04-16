@@ -29,10 +29,12 @@ def save_to_file(file_format: str, pair: str, start: str, end: str, interval: st
             option was added if feather is not usable on the host computer.
     
     """
+    
+    path = "Dataset"
 
-    if (os.path.isfile("Downloaded Historical Data") is not True):
+    if (os.path.isdir(path) is not True):
 
-        os.mkdir("Downloaded Historical Data")
+        os.mkdir(path)
 
     # specify the column for the klines
     columns = [
@@ -60,7 +62,7 @@ def save_to_file(file_format: str, pair: str, start: str, end: str, interval: st
     if (file_format == "csv"):
 
         # write the column and klines as csv file
-        with open(pair + "_" + interval + "_(" + str(start) + "-" + str(end) + ").csv", "w", newline="") as f:
+        with open(path + "/" + pair + "_" + interval + "_(" + str(start) + "-" + str(end) + ").csv", "w", newline="") as f:
             write = csv.writer(f)
             write.writerow(columns)
             write.writerows(rearranged_klines)
@@ -70,7 +72,7 @@ def save_to_file(file_format: str, pair: str, start: str, end: str, interval: st
         # as pickle
         # NOTE: reinsert the column as the first element in the list
         rearranged_klines.insert(0, columns)
-        with open(pair + "_" + interval + "_(" + str(start) + "-" + str(end) + ").pickle", "wb") as handle:
+        with open(path + "/" + pair + "_" + interval + "_(" + str(start) + "-" + str(end) + ").pickle", "wb") as handle:
             pickle.dump(rearranged_klines, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     elif (file_format == "feather"):
@@ -78,4 +80,4 @@ def save_to_file(file_format: str, pair: str, start: str, end: str, interval: st
         # convert nested list into a dataframe
         df = pd.DataFrame(data=rearranged_klines, columns=columns)
         # write the dataframe as feather file
-        df.to_feather(pair + "_" + interval + "_(" + str(start) + "-" + str(end) + ").feather", compression="zstd")
+        df.to_feather(path + "/" + pair + "_" + interval + "_(" + str(start) + "-" + str(end) + ").feather", compression="zstd")
