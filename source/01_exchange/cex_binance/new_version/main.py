@@ -22,14 +22,14 @@ if __name__ == "__main__":
     # initialize the AsyncKlines class
     createHistoricalKlines = AsyncKlines(
         # trading pair
-        symbol="USDT",
+        symbol="BNBUSDT",
         # klines interval
         interval="1m",
         # start-end datetime (UTC)
         start="2020-1-1 00:00:00",
-        end="2022-1-1 00:00:00",
+        end="2022-1-2 00:00:00",
         # include/exclude leveraged trading pair
         include_leverage=False,
         # we can choose either "csv", "pickle" or "feather" to save the klines
-        file_format="feather"
+        file_format="csv"
     )
