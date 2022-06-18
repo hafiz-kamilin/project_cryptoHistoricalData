@@ -1,0 +1,71 @@
+INFO 
+ Timestamp: 2022-04-05 07:22:36.124263
+INFO 
+ Initialization parameters
+  - Symbol: BNBUSDT
+  - Exclude leverage pairs: False
+  - Total trading pairs: 1
+  - Interval: 1m
+  - Start time: 2020-1-1 00:00:00
+  - End time: 2022-1-2 00:00:00
+INFO 
+ Trading pairs: 
+  - BNBUSDT
+DEBUG 
+  - Trading pair: BNBUSDT
+INFO 
+  - Fetch segment 1 (3) with 10 concurrent
+DEBUG 
+  - Estimated request weight consumed: 309
+DEBUG 
+  - Estimated request weight consumed: 310
+DEBUG 
+  - Estimated request weight consumed: 319
+DEBUG 
+  - Estimated request weight consumed: 323
+DEBUG 
+  - Estimated request weight consumed: 329
+DEBUG 
+  - Estimated request weight consumed: 332
+DEBUG 
+  - Estimated request weight consumed: 336
+DEBUG 
+  - Estimated request weight consumed: 338
+DEBUG 
+  - Estimated request weight consumed: 339
+DEBUG 
+  - Estimated request weight consumed: 340
+INFO 
+  - Wait: 10 s
+INFO 
+  - Fetch segment 2 (3) with 10 concurrent
+DEBUG 
+  - Estimated request weight consumed: 118
+DEBUG 
+  - Estimated request weight consumed: 131
+DEBUG 
+  - Estimated request weight consumed: 140
+DEBUG 
+  - Estimated request weight consumed: 141
+DEBUG 
+  - Estimated request weight consumed: 147
+DEBUG 
+  - Estimated request weight consumed: 149
+DEBUG 
+  - Estimated request weight consumed: 150
+DEBUG 
+  - Estimated request weight consumed: 151
+DEBUG 
+  - Estimated request weight consumed: 156
+DEBUG 
+  - Estimated request weight consumed: 157
+INFO 
+  - Wait: 10 s
+INFO 
+  - Fetch segment 3 (3) with 1 concurrent
+DEBUG 
+  - Estimated request weight consumed: 16
+INFO 
+  - Time taken: 330.3253107070923 s
+INFO 
+  - Save the fetched klines to file
